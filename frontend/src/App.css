@@ -147,6 +147,15 @@
   background: #e04454;
 }
 
+.btn-delete {
+  background: #dc3545;
+  color: white;
+}
+
+.btn-delete:hover {
+  background: #c82333;
+}
+
 .btn-small {
   padding: 0.5rem 1rem;
   font-size: 0.9rem;
