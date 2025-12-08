@@ -277,5 +277,54 @@ async def get_stats(db: Session = Depends(get_db)):
         "total_payments": total_payments
     }
 
+@app.post("/sync-users")
+async def sync_users(db: Session = Depends(get_db)):
+    """Sync database users with MikroTik - remove stale users not in MikroTik"""
+    try:
+        # Get all users from MikroTik
+        mikrotik_usernames = set(mikrotik.get_all_users())
+
+        if not mikrotik_usernames:
+            return {
+                "success": False,
+                "message": "Failed to get users from MikroTik",
+                "removed": 0
+            }
+
+        # Get all users from database
+        db_users = db.query(User).all()
+
+        # Find stale users (in database but not in MikroTik)
+        stale_users = []
+        for user in db_users:
+            if user.username not in mikrotik_usernames:
+                stale_users.append(user.username)
+
+        # Remove stale users
+        removed_count = 0
+        for username in stale_users:
+            user = db.query(User).filter(User.username == username).first()
+            if user:
+                db.delete(user)
+                removed_count += 1
+                log_event(db, f"Removed stale user {username} during sync")
+
+        db.commit()
+
+        return {
+            "success": True,
+            "message": f"Sync completed. Removed {removed_count} stale users.",
+            "removed": removed_count,
+            "stale_users": stale_users,
+            "mikrotik_total": len(mikrotik_usernames),
+            "database_total": len(db_users) - removed_count
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "message": f"Sync failed: {str(e)}",
+            "removed": 0
+        }
+
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
