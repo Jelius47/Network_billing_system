@@ -1,0 +1,33 @@
+# MikroTik Setup Commands for Billing System
+# Copy and paste these into your MikroTik terminal (Winbox or WebFig)
+
+# Step 1: Create User Profiles
+/ip hotspot user profile add name=daily_1000 rate-limit=1M/1M session-timeout=1d
+/ip hotspot user profile add name=monthly_1000 rate-limit=1M/1M session-timeout=30d
+
+# Step 2: Enable API
+/ip service set api disabled=no
+/ip service set api port=8728
+
+# Step 3: Create API Admin User
+# IMPORTANT: Change 'StrongPassword123' to your own password!
+/user add name=api_admin password=StrongPassword123 group=full
+
+# Step 4: Verify Configuration
+/ip hotspot print
+/ip hotspot user profile print
+/ip service print where name=api
+/user print where name=api_admin
+
+# Step 5: Test Create User
+/ip hotspot user add name=test_user password=test123 profile=daily_1000
+
+# Step 6: Backup Configuration
+/system backup save name=billing-backup
+/export file=billing-config
+
+# You're done! Now configure your backend .env file with:
+# MIKROTIK_HOST=192.168.88.1
+# MIKROTIK_USERNAME=api_admin
+# MIKROTIK_PASSWORD=<the password you set above>
+# MIKROTIK_PORT=8728

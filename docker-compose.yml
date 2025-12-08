@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:14-alpine
+    container_name: mikrotik-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: mikrotik_billing
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-temp123}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d mikrotik_billing"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - mikrotik-network
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: mikrotik-backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://admin:${DB_PASSWORD:-temp123}@postgres:5432/mikrotik_billing
+      MIKROTIK_HOST: ${MIKROTIK_HOST}
+      MIKROTIK_USERNAME: ${MIKROTIK_USERNAME:-api_admin}
+      MIKROTIK_PASSWORD: ${MIKROTIK_PASSWORD}
+      MIKROTIK_PORT: ${MIKROTIK_PORT:-8728}
+      API_HOST: 0.0.0.0
+      API_PORT: 8000
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - mikrotik-network
+    # Uncomment if using host network mode for direct MikroTik access
+    # network_mode: host
+
+  # Frontend (React + Nginx)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: mikrotik-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - backend
+    networks:
+      - mikrotik-network
+    volumes:
+      # Mount SSL certificates if using HTTPS
+      - ./certs:/etc/nginx/certs:ro
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  mikrotik-network:
+    driver: bridge
