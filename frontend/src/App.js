@@ -5,6 +5,7 @@ import Home from './components/Home';
 import UserList from './components/UserList';
 import AddUser from './components/AddUser';
 import Payments from './components/Payments';
+import ActiveUsers from './components/ActiveUsers';
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
           <h1>MikroTik Billing System</h1>
           <div className="nav-links">
             <Link to="/">Home</Link>
+            <Link to="/active">Active Users</Link>
             <Link to="/users">Users</Link>
             <Link to="/add-user">Add User</Link>
             <Link to="/payments">Payments</Link>
@@ -23,6 +25,7 @@ function App() {
         <div className="container">
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/active" element={<ActiveUsers />} />
             <Route path="/users" element={<UserList />} />
             <Route path="/add-user" element={<AddUser />} />
             <Route path="/payments" element={<Payments />} />

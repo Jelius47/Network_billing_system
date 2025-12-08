@@ -49,6 +49,22 @@ function UserList() {
     }
   };
 
+  const deleteUser = async (userId, username) => {
+    if (!window.confirm(`Are you sure you want to delete user "${username}"? This will remove them from both MikroTik and the database. This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      await axios.delete(`${API_BASE_URL}/users/${userId}`);
+      setMessage({ type: 'success', text: `User "${username}" deleted successfully` });
+      fetchUsers();
+      setTimeout(() => setMessage(null), 3000);
+    } catch (error) {
+      setMessage({ type: 'error', text: error.response?.data?.detail || 'Failed to delete user' });
+      setTimeout(() => setMessage(null), 5000);
+    }
+  };
+
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleString();
@@ -112,6 +128,12 @@ function UserList() {
                     onClick={() => extendUser(user.id, user.plan_type === 'daily_1000' ? 1 : 30)}
                   >
                     Extend
+                  </button>
+                  <button
+                    className="btn btn-small btn-delete"
+                    onClick={() => deleteUser(user.id, user.username)}
+                  >
+                    Delete
                   </button>
                 </div>
               </td>

@@ -222,6 +222,30 @@ async def toggle_user(user_id: int, db: Session = Depends(get_db)):
 
     return {"message": "User toggled", "is_active": user.is_active}
 
+@app.delete("/users/{user_id}")
+async def delete_user(user_id: int, db: Session = Depends(get_db)):
+    """Delete user from both MikroTik and database"""
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    username = user.username
+
+    # Delete from MikroTik first
+    success = mikrotik.delete_user(username)
+    if not success:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to delete user from MikroTik. User may not exist in router."
+        )
+
+    # Delete from database
+    db.delete(user)
+    db.commit()
+    log_event(db, f"Deleted user {username} from system")
+
+    return {"message": f"User {username} deleted successfully from both MikroTik and database"}
+
 @app.post("/payments", response_model=PaymentResponse)
 async def record_payment(payment: PaymentCreate, db: Session = Depends(get_db)):
     """Record a payment"""

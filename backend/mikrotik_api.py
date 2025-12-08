@@ -219,6 +219,23 @@ class MikroTikAPI:
             print(f"Failed to get active users: {e}")
             return []
 
+    def get_all_users(self):
+        """Get list of all configured hotspot users from MikroTik"""
+        try:
+            # Always reconnect for each operation to avoid stale connections
+            if not self.connect():
+                raise Exception("Failed to connect to MikroTik")
+
+            api = self.connection.get_api()
+            user_resource = api.get_resource('/ip/hotspot/user')
+
+            users = user_resource.get()
+            # Return list of usernames
+            return [user.get('name') for user in users if user.get('name')]
+        except Exception as e:
+            print(f"Failed to get all users: {e}")
+            return []
+
     def delete_user(self, username):
         """Delete a hotspot user from MikroTik"""
         try:
