@@ -55,10 +55,21 @@ function UserList() {
     }
 
     try {
-      await axios.delete(`${API_BASE_URL}/users/${userId}`);
-      setMessage({ type: 'success', text: `User "${username}" deleted successfully` });
+      const response = await axios.delete(`${API_BASE_URL}/users/${userId}`);
+
+      // Check if there's a warning (partial success)
+      if (response.data.warning) {
+        setMessage({
+          type: 'warning',
+          text: `User "${username}" deleted from database. Warning: ${response.data.warning}`
+        });
+        setTimeout(() => setMessage(null), 8000);
+      } else {
+        setMessage({ type: 'success', text: `User "${username}" deleted successfully from both systems` });
+        setTimeout(() => setMessage(null), 3000);
+      }
+
       fetchUsers();
-      setTimeout(() => setMessage(null), 3000);
     } catch (error) {
       setMessage({ type: 'error', text: error.response?.data?.detail || 'Failed to delete user' });
       setTimeout(() => setMessage(null), 5000);

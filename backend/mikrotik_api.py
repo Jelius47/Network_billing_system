@@ -9,58 +9,114 @@ load_dotenv()
 
 class MikroTikAPI:
     def __init__(self):
-        self.host = os.getenv("MIKROTIK_HOST", "192.168.88.1")
+        self.original_host = os.getenv("MIKROTIK_HOST", "192.168.88.1")  # Store original (MAC or IP)
+        self.host = self.original_host
         self.username = os.getenv("MIKROTIK_USERNAME", "admin")
         self.password = os.getenv("MIKROTIK_PASSWORD", "")
         self.port = int(os.getenv("MIKROTIK_PORT", "8728"))
         self.connection = None
+        self.cached_ip = None  # Cache resolved IP
+        self.last_scan_time = 0  # Track last scan (avoid frequent rescans)
 
         # If host is MAC address, try to find IP
-        if self._is_mac_address(self.host):
-            print(f"MAC address detected: {self.host}")
-            ip = self._find_ip_from_mac(self.host)
+        if self._is_mac_address(self.original_host):
+            print(f"MAC address detected: {self.original_host}")
+            ip = self._find_ip_from_mac(self.original_host)
             if ip:
-                print(f"Found IP for MAC {self.host}: {ip}")
+                print(f"✓ Resolved to: {ip}")
                 self.host = ip
+                self.cached_ip = ip
+                import time
+                self.last_scan_time = time.time()
             else:
-                print(f"Warning: Could not find IP for MAC {self.host}, trying anyway...")
+                print(f"✗ Could not resolve MAC to IP")
 
     def _is_mac_address(self, address):
         """Check if the address is a MAC address"""
         mac_pattern = re.compile(r'^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$')
         return bool(mac_pattern.match(address))
 
-    def _find_ip_from_mac(self, mac_address):
-        """Find IP address from MAC address using ARP"""
+    def _get_local_network(self):
+        """Get local network subnet"""
         try:
-            # Run arp -a command
-            result = subprocess.run(['arp', '-a'], capture_output=True, text=True)
+            import socket
+            import netifaces
 
-            # Parse ARP table
+            # Try using netifaces (more reliable)
+            try:
+                gateways = netifaces.gateways()
+                default_interface = gateways['default'][netifaces.AF_INET][1]
+                addrs = netifaces.ifaddresses(default_interface)
+                ip = addrs[netifaces.AF_INET][0]['addr']
+                # Extract subnet (e.g., 192.168.1.x from 192.168.1.100)
+                subnet = '.'.join(ip.split('.')[0:3])
+                return subnet
+            except:
+                pass
+
+            # Fallback: use socket to get local IP
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.connect(("8.8.8.8", 80))
+            local_ip = s.getsockname()[0]
+            s.close()
+            subnet = '.'.join(local_ip.split('.')[0:3])
+            return subnet
+        except:
+            return "192.168.1"  # Default fallback
+
+    def _find_ip_from_mac(self, mac_address):
+        """Find IP address from MAC address using ARP - FAST VERSION"""
+        try:
             mac_normalized = mac_address.lower().replace('-', ':')
+
+            # STEP 1: Quick ARP cache check (instant)
+            result = subprocess.run(['arp', '-a'], capture_output=True, text=True, timeout=5)
             for line in result.stdout.split('\n'):
                 if mac_normalized in line.lower():
-                    # Extract IP address
                     ip_match = re.search(r'\(([0-9.]+)\)', line)
                     if ip_match:
-                        return ip_match.group(1)
+                        found_ip = ip_match.group(1)
+                        print(f"✓ Found in ARP cache: {found_ip}")
+                        return found_ip
 
-            # Try pinging common router IPs to populate ARP cache (with shorter timeout)
-            common_ips = ['192.168.1.159', '192.168.88.1', '192.168.1.1']
-            for ip in common_ips:
+            # STEP 2: Quick targeted ping (2-3 seconds max)
+            print(f"Scanning for MAC {mac_address}...")
+            subnet = self._get_local_network()
+
+            # Only check most likely IPs (gateway, MikroTik default, and .159)
+            quick_scan = [f"{subnet}.1", f"{subnet}.159", "192.168.88.1"]
+
+            # Ping all at once using threading for speed
+            import threading
+            def quick_ping(ip):
                 try:
                     subprocess.run(['ping', '-c', '1', '-W', '1', ip],
-                                 capture_output=True, timeout=1)
-                except subprocess.TimeoutExpired:
-                    continue
+                                 capture_output=True, timeout=2)
+                except:
+                    pass
 
-            # Try ARP again
-            result = subprocess.run(['arp', '-a'], capture_output=True, text=True)
+            threads = []
+            for ip in quick_scan:
+                t = threading.Thread(target=quick_ping, args=(ip,))
+                t.start()
+                threads.append(t)
+
+            # Wait for all pings (max 2 seconds)
+            for t in threads:
+                t.join(timeout=2)
+
+            # Quick ARP check
+            result = subprocess.run(['arp', '-a'], capture_output=True, text=True, timeout=5)
             for line in result.stdout.split('\n'):
                 if mac_normalized in line.lower():
                     ip_match = re.search(r'\(([0-9.]+)\)', line)
                     if ip_match:
-                        return ip_match.group(1)
+                        found_ip = ip_match.group(1)
+                        print(f"✓ Found after quick scan: {found_ip}")
+                        return found_ip
+
+            print(f"✗ Could not find MAC {mac_address} quickly")
+            print(f"TIP: Make sure you're on the same network as the router")
 
         except Exception as e:
             print(f"Error finding IP from MAC: {e}")
@@ -81,6 +137,30 @@ class MikroTikAPI:
                     except:
                         pass
                     self.connection = None
+
+                # Re-resolve MAC to IP only if needed (smart caching)
+                if self._is_mac_address(self.original_host):
+                    current_time = time.time()
+                    cache_age = current_time - self.last_scan_time
+
+                    # Use cached IP if it's less than 5 minutes old, otherwise re-scan
+                    if self.cached_ip and cache_age < 300:  # 5 minutes
+                        self.host = self.cached_ip
+                        if attempt == 0:  # Only print on first attempt
+                            print(f"Using cached IP: {self.cached_ip}")
+                    else:
+                        print(f"Refreshing IP for MAC {self.original_host}...")
+                        ip = self._find_ip_from_mac(self.original_host)
+                        if ip:
+                            self.host = ip
+                            self.cached_ip = ip
+                            self.last_scan_time = current_time
+                        else:
+                            print(f"✗ Could not resolve MAC to IP")
+                            if attempt < max_retries - 1:
+                                time.sleep(2)
+                                continue
+                            return False
 
                 print(f"Connecting to MikroTik at {self.host}:{self.port} (attempt {attempt + 1}/{max_retries})...")
 
@@ -237,27 +317,37 @@ class MikroTikAPI:
             return []
 
     def delete_user(self, username):
-        """Delete a hotspot user from MikroTik"""
-        try:
-            if not self.connection:
-                self.connect()
+        """Delete a hotspot user from MikroTik with retry logic"""
+        for attempt in range(3):  # Try 3 times
+            try:
+                # Always reconnect for each operation to avoid stale connections
+                if not self.connect():
+                    print(f"Failed to connect to MikroTik (attempt {attempt + 1}/3)")
+                    if attempt < 2:
+                        self.connection = None
+                        continue
+                    return False
 
-            api = self.connection.get_api()
-            user_resource = api.get_resource('/ip/hotspot/user')
+                api = self.connection.get_api()
+                user_resource = api.get_resource('/ip/hotspot/user')
 
-            # Find and delete the user
-            users = user_resource.get(name=username)
-            if users:
-                user_id = users[0]['id']
-                user_resource.remove(id=user_id)
-                print(f"User {username} deleted successfully")
-                return True
-            else:
-                print(f"User {username} not found")
+                # Find and delete the user
+                users = user_resource.get(name=username)
+                if users:
+                    user_id = users[0]['id']
+                    user_resource.remove(id=user_id)
+                    print(f"User {username} deleted successfully from MikroTik")
+                    return True
+                else:
+                    print(f"User {username} not found in MikroTik")
+                    return True  # Return True if user doesn't exist (already deleted)
+            except Exception as e:
+                print(f"Failed to delete user {username} (attempt {attempt + 1}/3): {e}")
+                if attempt < 2:
+                    self.connection = None
+                    continue
                 return False
-        except Exception as e:
-            print(f"Failed to delete user {username}: {e}")
-            return False
+        return False
 
 # Global instance
 mikrotik = MikroTikAPI()
