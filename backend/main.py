@@ -230,21 +230,35 @@ async def delete_user(user_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="User not found")
 
     username = user.username
+    mikrotik_deleted = False
+    warning_message = None
 
-    # Delete from MikroTik first
-    success = mikrotik.delete_user(username)
-    if not success:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to delete user from MikroTik. User may not exist in router."
-        )
+    # Try to delete from MikroTik first
+    try:
+        mikrotik_deleted = mikrotik.delete_user(username)
+        if not mikrotik_deleted:
+            warning_message = "Could not delete from MikroTik (connection issue or user not found in router)"
+    except Exception as e:
+        warning_message = f"MikroTik deletion failed: {str(e)}"
+        print(f"MikroTik error during delete: {e}")
 
-    # Delete from database
+    # Always delete from database (even if MikroTik fails)
     db.delete(user)
     db.commit()
-    log_event(db, f"Deleted user {username} from system")
+    log_event(db, f"Deleted user {username} from database. MikroTik status: {'success' if mikrotik_deleted else 'failed'}")
 
-    return {"message": f"User {username} deleted successfully from both MikroTik and database"}
+    # Return appropriate message
+    if mikrotik_deleted:
+        return {
+            "message": f"User {username} deleted successfully from both MikroTik and database",
+            "success": True
+        }
+    else:
+        return {
+            "message": f"User {username} deleted from database. {warning_message}. You may need to manually remove from MikroTik if it still exists.",
+            "success": True,
+            "warning": warning_message
+        }
 
 @app.post("/payments", response_model=PaymentResponse)
 async def record_payment(payment: PaymentCreate, db: Session = Depends(get_db)):
