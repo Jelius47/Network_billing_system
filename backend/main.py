@@ -106,6 +106,9 @@ scheduler.start()
 @app.on_event("startup")
 async def startup_event():
     """Initialize database on startup"""
+    # Refresh MikroTik config from .env (clears any IP caches)
+    mikrotik.refresh_config()
+
     init_db()
     print("Database initialized")
 
