@@ -31,6 +31,30 @@ class MikroTikAPI:
             else:
                 print(f"✗ Could not resolve MAC to IP")
 
+    def refresh_config(self):
+        """Reload configuration from .env and clear caches"""
+        from dotenv import load_dotenv
+        load_dotenv(override=True)  # Force reload .env
+
+        # Clear connection and caches
+        if self.connection:
+            try:
+                self.connection.disconnect()
+            except:
+                pass
+        self.connection = None
+        self.cached_ip = None
+        self.last_scan_time = 0
+
+        # Reload config
+        self.original_host = os.getenv("MIKROTIK_HOST", "192.168.88.1")
+        self.host = self.original_host
+        self.username = os.getenv("MIKROTIK_USERNAME", "admin")
+        self.password = os.getenv("MIKROTIK_PASSWORD", "")
+        self.port = int(os.getenv("MIKROTIK_PORT", "8728"))
+
+        print(f"✓ Configuration refreshed - MikroTik host: {self.host}")
+
     def _is_mac_address(self, address):
         """Check if the address is a MAC address"""
         mac_pattern = re.compile(r'^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$')
@@ -164,9 +188,9 @@ class MikroTikAPI:
 
                 print(f"Connecting to MikroTik at {self.host}:{self.port} (attempt {attempt + 1}/{max_retries})...")
 
-                # Set socket timeout
+                # Set socket timeout (increased for network latency)
                 import socket
-                socket.setdefaulttimeout(10)
+                socket.setdefaulttimeout(30)
 
                 self.connection = routeros_api.RouterOsApiPool(
                     self.host,
