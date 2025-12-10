@@ -4,102 +4,205 @@
         <meta charset="utf-8" />
         <meta http-equiv="pragma" content="no-cache" />
         <meta http-equiv="expires" content="-1" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Uchipani | Login</title>
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+        />
+        <title>uCHiPaNi | Internet Access</title>
         <style>
+            /* Reset and Base Styles */
             * {
                 margin: 0;
                 padding: 0;
                 box-sizing: border-box;
+                -webkit-tap-highlight-color: transparent;
             }
 
+            html,
             body {
+                width: 100%;
+                height: 100%;
                 font-family:
                     -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-                    Oxygen, Ubuntu, sans-serif;
-                background: #ffffff;
-                min-height: 100vh;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                padding: 20px;
-            }
-
-            .login-box {
-                width: 100%;
-                max-width: 320px;
-            }
-
-            .logo {
-                text-align: center;
-                margin-bottom: 40px;
-                font-weight: 300;
-                letter-spacing: 2px;
-                color: #333;
-                font-size: 24px;
-            }
-
-            .form-group {
-                margin-bottom: 20px;
-            }
-
-            .form-group input {
-                width: 100%;
-                padding: 12px 16px;
-                border: 1px solid #ddd;
-                border-radius: 4px;
+                    "Helvetica Neue", Arial, sans-serif;
                 font-size: 16px;
-                color: #333;
-                transition: border 0.2s;
+                background: #f8f9fa;
+                color: #1a1a1a;
+                overflow-x: hidden;
             }
 
-            .form-group input:focus {
+            /* Main Container */
+            .container {
+                display: flex;
+                flex-direction: column;
+                min-height: 100vh;
+                padding: 20px;
+                justify-content: center;
+                align-items: center;
+            }
+
+            /* Logo Styling */
+            .logo-container {
+                text-align: center;
+                margin-bottom: 48px;
+            }
+
+            .uchipani-logo {
+                font-size: 2rem;
+                font-weight: 600;
+                color: #1a1a1a;
+                letter-spacing: -0.5px;
+            }
+
+            .tagline {
+                color: #6b7280;
+                font-size: 0.875rem;
+                margin-top: 8px;
+                font-weight: 400;
+                letter-spacing: 0.5px;
+            }
+
+            /* Form Container */
+            .form-container {
+                width: 100%;
+                max-width: 380px;
+                background: #ffffff;
+                border-radius: 8px;
+                padding: 40px;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                border: 1px solid #e5e7eb;
+            }
+
+            /* Input Groups */
+            .input-group {
+                margin-bottom: 20px;
+                width: 100%;
+            }
+
+            .input-group input {
+                width: 100%;
+                padding: 12px 14px;
+                font-size: 15px;
+                border: 1px solid #d1d5db;
+                border-radius: 6px;
+                background: #fff;
+                color: #1a1a1a;
+                transition: all 0.2s ease;
+                -webkit-appearance: none;
+                appearance: none;
+            }
+
+            .input-group input[type="text"],
+            .input-group input[type="password"] {
+                display: block;
+            }
+
+            .input-group input:focus {
                 outline: none;
-                border-color: #666;
+                border-color: #1a1a1a;
+                box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
             }
 
+            .input-group input::placeholder {
+                color: #9ca3af;
+            }
+
+            /* Submit Button */
             .submit-btn {
                 width: 100%;
                 padding: 12px;
-                background: #333;
+                font-size: 15px;
+                font-weight: 500;
                 color: white;
+                background: #1a1a1a;
                 border: none;
-                border-radius: 4px;
-                font-size: 16px;
+                border-radius: 6px;
                 cursor: pointer;
-                transition: background 0.2s;
+                transition: all 0.2s ease;
+                margin-top: 8px;
             }
 
             .submit-btn:hover {
-                background: #444;
+                background: #000000;
             }
 
-            .error {
-                background: #fff5f5;
-                border: 1px solid #fed7d7;
-                color: #c53030;
-                padding: 12px;
-                border-radius: 4px;
+            .submit-btn:active {
+                transform: scale(0.98);
+            }
+
+            /* Message Styling */
+            .message {
+                padding: 12px 16px;
                 margin-bottom: 20px;
-                font-size: 14px;
-                text-align: center;
-            }
-
-            .trial {
+                border-radius: 6px;
                 text-align: center;
                 font-size: 14px;
-                color: #666;
-                margin-top: 20px;
             }
 
-            .trial a {
-                color: #333;
-                text-decoration: underline;
+            .info-message {
+                background: #f3f4f6;
+                color: #4b5563;
+                border: 1px solid #e5e7eb;
+            }
+
+            .error-message {
+                background: #fef2f2;
+                color: #dc2626;
+                border: 1px solid #fecaca;
+            }
+
+            .trial-notice {
+                background: #1a1a1a;
+                color: white;
+                padding: 12px 16px;
+                border-radius: 6px;
+                margin-bottom: 20px;
+                text-align: center;
+                font-size: 14px;
+            }
+
+            /* Footer */
+            .footer {
+                text-align: center;
+                margin-top: 40px;
+                color: #9ca3af;
+                font-size: 0.813rem;
+            }
+
+            .footer p {
+                margin-top: 4px;
+            }
+
+            /* Responsive Design */
+            @media (max-width: 767px) {
+                .container {
+                    padding: 15px;
+                }
+
+                .logo-container {
+                    margin-bottom: 32px;
+                }
+
+                .uchipani-logo {
+                    font-size: 1.75rem;
+                }
+
+                .form-container {
+                    padding: 32px 24px;
+                }
+
+                /* Prevent iOS zoom on input focus */
+                input,
+                select,
+                textarea {
+                    font-size: 16px !important;
+                }
             }
         </style>
     </head>
 
     <body>
+        <!-- MikroTik Authentication Scripts (KEEP THESE UNCHANGED) -->
         $(if chap-id)
         <form
             name="sendin"
@@ -128,44 +231,79 @@
         </script>
         $(endif)
 
-        <div class="login-box">
-            <div class="logo">UCHIPANI EmPirE</div>
+        <div class="container">
+            <div class="logo-container">
+                <div class="uchipani-logo">uCHiPaNi</div>
+                <div class="tagline">PREMIUM CONNECTIVITY</div>
+            </div>
 
-            $(if error)
-            <div class="error">$(error)</div>
+            <div class="form-container">
+                <!-- Messages from MikroTik -->
+                $(if error)
+                <div class="message error-message">$(error)</div>
+                $(endif) $(if trial == 'yes')
+                <div class="trial-notice">Free Trial Available</div>
+                $(endif) $(if error == "")
+                <div class="message info-message">
+                    Welcome to uCHiPaNi Network
+                </div>
+
+                <!-- Login Form -->
+                <form
+                    name="login"
+                    action="$(link-login-only)"
+                    method="post"
+                    $(if
+                    chap-id)
+                    onSubmit="return doLogin()"
+                    $(endif)
+                >
+                    <input type="hidden" name="dst" value="$(link-orig)" />
+                    <input type="hidden" name="popup" value="true" />
+
+                    <div class="input-group">
+                        <input
+                            name="username"
+                            type="text"
+                            value="$(username)"
+                            placeholder="Username"
+                            autocomplete="username"
+                            autocapitalize="none"
+                        />
+                    </div>
+
+                    <div class="input-group">
+                        <input
+                            name="password"
+                            type="password"
+                            placeholder="Password"
+                            autocomplete="current-password"
+                        />
+                    </div>
+
+                    <button type="submit" class="submit-btn">Sign In</button>
+                </form>
+            </div>
+
+            <div class="footer">
+                <p>©️ 2026 uCHiPaNi Networks</p>
+            </div>
             $(endif)
-
-            <form
-                name="login"
-                action="$(link-login-only)"
-                method="post"
-                $(if
-                chap-id)
-                onSubmit="return doLogin()"
-                $(endif)
-            >
-                <input type="hidden" name="dst" value="$(link-orig)" />
-                <input type="hidden" name="popup" value="true" />
-
-                <div class="form-group">
-                    <input
-                        name="username"
-                        type="text"
-                        value="$(username)"
-                        placeholder="Username"
-                    />
-                </div>
-
-                <div class="form-group">
-                    <input
-                        name="password"
-                        type="password"
-                        placeholder="Password"
-                    />
-                </div>
-
-                <button type="submit" class="submit-btn">Connect</button>
-            </form>
         </div>
+
+        <!-- Enhancement Script -->
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                // Auto-focus username field if empty
+                const usernameField = document.querySelector(
+                    'input[name="username"]',
+                );
+                if (usernameField && !usernameField.value) {
+                    setTimeout(() => {
+                        usernameField.focus();
+                    }, 100);
+                }
+            });
+        </script>
     </body>
 </html>
