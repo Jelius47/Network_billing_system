@@ -1,15 +1,19 @@
-from fastapi import FastAPI, Depends, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.orm import Session
-from pydantic import BaseModel
+import os
 from datetime import datetime, timedelta
 from typing import List, Optional
-from apscheduler.schedulers.background import BackgroundScheduler
+
 import uvicorn
-
-from database import get_db, init_db, User, Payment, Log
+from apscheduler.schedulers.background import BackgroundScheduler
+from database import Log, Payment, User, get_db, init_db
+from dotenv import load_dotenv
+from fastapi import Depends, FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from mikrotik_api import mikrotik
+from pydantic import BaseModel
+from sqlalchemy.orm import Session
 
+load_dotenv()
+API_PORT = int(os.getenv("API_PORT", 8004))
 app = FastAPI(title="MikroTik Billing System")
 
 # CORS Configuration
@@ -21,11 +25,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 # Pydantic Models
 class UserCreate(BaseModel):
     username: str
     password: str
     plan_type: str  # 'daily_1000' or 'monthly_1000'
+
 
 class UserResponse(BaseModel):
     id: int
@@ -38,9 +44,11 @@ class UserResponse(BaseModel):
     class Config:
         from_attributes = True
 
+
 class PaymentCreate(BaseModel):
     user_id: int
     amount: float
+
 
 class PaymentResponse(BaseModel):
     id: int
@@ -52,8 +60,10 @@ class PaymentResponse(BaseModel):
     class Config:
         from_attributes = True
 
+
 class ExtendSubscription(BaseModel):
     days: int
+
 
 # Utility Functions
 def calculate_expiry(plan_type: str) -> datetime:
@@ -66,11 +76,13 @@ def calculate_expiry(plan_type: str) -> datetime:
     else:
         raise ValueError(f"Invalid plan type: {plan_type}")
 
+
 def log_event(db: Session, event: str):
     """Log an event to the database"""
     log = Log(event=event)
     db.add(log)
     db.commit()
+
 
 # Background Task for Auto-Disabling Expired Users
 def check_expired_users():
@@ -78,10 +90,9 @@ def check_expired_users():
     db = next(get_db())
     try:
         now = datetime.utcnow()
-        expired_users = db.query(User).filter(
-            User.expiry < now,
-            User.is_active == True
-        ).all()
+        expired_users = (
+            db.query(User).filter(User.expiry < now, User.is_active == True).all()
+        )
 
         for user in expired_users:
             # Disable in MikroTik
@@ -97,10 +108,12 @@ def check_expired_users():
     finally:
         db.close()
 
+
 # Initialize Scheduler
 scheduler = BackgroundScheduler()
-scheduler.add_job(check_expired_users, 'interval', minutes=10)
+scheduler.add_job(check_expired_users, "interval", minutes=10)
 scheduler.start()
+
 
 # API Endpoints
 @app.on_event("startup")
@@ -115,6 +128,7 @@ async def startup_event():
     # Try to connect to MikroTik (non-blocking)
     try:
         import socket
+
         # Set default socket timeout
         socket.setdefaulttimeout(5)
 
@@ -126,16 +140,19 @@ async def startup_event():
         print(f"Warning: MikroTik connection failed: {e}")
         print("System will continue - connection will retry on API calls")
 
+
 @app.on_event("shutdown")
 async def shutdown_event():
     """Cleanup on shutdown"""
     mikrotik.disconnect()
     scheduler.shutdown()
 
+
 @app.get("/")
 async def root():
     """Health check endpoint"""
     return {"status": "online", "message": "MikroTik Billing System API"}
+
 
 @app.post("/users", response_model=UserResponse)
 async def create_user(user: UserCreate, db: Session = Depends(get_db)):
@@ -160,7 +177,7 @@ async def create_user(user: UserCreate, db: Session = Depends(get_db)):
         password=user.password,
         plan_type=user.plan_type,
         expiry=expiry,
-        is_active=True
+        is_active=True,
     )
     db.add(db_user)
     db.commit()
@@ -169,11 +186,13 @@ async def create_user(user: UserCreate, db: Session = Depends(get_db)):
     log_event(db, f"Created user: {user.username}")
     return db_user
 
+
 @app.get("/users", response_model=List[UserResponse])
 async def list_users(db: Session = Depends(get_db)):
     """List all users"""
     users = db.query(User).all()
     return users
+
 
 @app.get("/users/{user_id}", response_model=UserResponse)
 async def get_user(user_id: int, db: Session = Depends(get_db)):
@@ -183,8 +202,11 @@ async def get_user(user_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
+
 @app.post("/users/{user_id}/extend")
-async def extend_user(user_id: int, extension: ExtendSubscription, db: Session = Depends(get_db)):
+async def extend_user(
+    user_id: int, extension: ExtendSubscription, db: Session = Depends(get_db)
+):
     """Extend user subscription"""
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
@@ -202,7 +224,11 @@ async def extend_user(user_id: int, extension: ExtendSubscription, db: Session =
     db.commit()
     log_event(db, f"Extended user {user.username} by {extension.days} days")
 
-    return {"message": f"User extended by {extension.days} days", "new_expiry": user.expiry}
+    return {
+        "message": f"User extended by {extension.days} days",
+        "new_expiry": user.expiry,
+    }
+
 
 @app.post("/users/{user_id}/toggle")
 async def toggle_user(user_id: int, db: Session = Depends(get_db)):
@@ -221,9 +247,13 @@ async def toggle_user(user_id: int, db: Session = Depends(get_db)):
             user.is_active = True
 
     db.commit()
-    log_event(db, f"Toggled user {user.username} to {'active' if user.is_active else 'inactive'}")
+    log_event(
+        db,
+        f"Toggled user {user.username} to {'active' if user.is_active else 'inactive'}",
+    )
 
     return {"message": "User toggled", "is_active": user.is_active}
+
 
 @app.delete("/users/{user_id}")
 async def delete_user(user_id: int, db: Session = Depends(get_db)):
@@ -248,20 +278,24 @@ async def delete_user(user_id: int, db: Session = Depends(get_db)):
     # Always delete from database (even if MikroTik fails)
     db.delete(user)
     db.commit()
-    log_event(db, f"Deleted user {username} from database. MikroTik status: {'success' if mikrotik_deleted else 'failed'}")
+    log_event(
+        db,
+        f"Deleted user {username} from database. MikroTik status: {'success' if mikrotik_deleted else 'failed'}",
+    )
 
     # Return appropriate message
     if mikrotik_deleted:
         return {
             "message": f"User {username} deleted successfully from both MikroTik and database",
-            "success": True
+            "success": True,
         }
     else:
         return {
             "message": f"User {username} deleted from database. {warning_message}. You may need to manually remove from MikroTik if it still exists.",
             "success": True,
-            "warning": warning_message
+            "warning": warning_message,
         }
+
 
 @app.post("/payments", response_model=PaymentResponse)
 async def record_payment(payment: PaymentCreate, db: Session = Depends(get_db)):
@@ -272,11 +306,7 @@ async def record_payment(payment: PaymentCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="User not found")
 
     # Create payment record
-    db_payment = Payment(
-        user_id=payment.user_id,
-        amount=payment.amount,
-        verified=True
-    )
+    db_payment = Payment(user_id=payment.user_id, amount=payment.amount, verified=True)
     db.add(db_payment)
     db.commit()
     db.refresh(db_payment)
@@ -284,11 +314,13 @@ async def record_payment(payment: PaymentCreate, db: Session = Depends(get_db)):
     log_event(db, f"Payment recorded for user ID {payment.user_id}: ${payment.amount}")
     return db_payment
 
+
 @app.get("/payments", response_model=List[PaymentResponse])
 async def list_payments(db: Session = Depends(get_db)):
     """List all payments"""
     payments = db.query(Payment).all()
     return payments
+
 
 @app.get("/expired")
 async def list_expired(db: Session = Depends(get_db)):
@@ -297,11 +329,13 @@ async def list_expired(db: Session = Depends(get_db)):
     expired_users = db.query(User).filter(User.expiry < now).all()
     return expired_users
 
+
 @app.get("/active-connections")
 async def get_active_connections():
     """Get currently active connections from MikroTik"""
     active_users = mikrotik.get_active_users()
     return {"count": len(active_users), "users": active_users}
+
 
 @app.get("/stats")
 async def get_stats(db: Session = Depends(get_db)):
@@ -315,8 +349,9 @@ async def get_stats(db: Session = Depends(get_db)):
         "total_users": total_users,
         "active_users": active_users,
         "expired_users": expired_users,
-        "total_payments": total_payments
+        "total_payments": total_payments,
     }
+
 
 @app.post("/sync-users")
 async def sync_users(db: Session = Depends(get_db)):
@@ -329,7 +364,7 @@ async def sync_users(db: Session = Depends(get_db)):
             return {
                 "success": False,
                 "message": "Failed to get users from MikroTik",
-                "removed": 0
+                "removed": 0,
             }
 
         # Get all users from database
@@ -358,14 +393,11 @@ async def sync_users(db: Session = Depends(get_db)):
             "removed": removed_count,
             "stale_users": stale_users,
             "mikrotik_total": len(mikrotik_usernames),
-            "database_total": len(db_users) - removed_count
+            "database_total": len(db_users) - removed_count,
         }
     except Exception as e:
-        return {
-            "success": False,
-            "message": f"Sync failed: {str(e)}",
-            "removed": 0
-        }
+        return {"success": False, "message": f"Sync failed: {str(e)}", "removed": 0}
+
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=API_PORT)
