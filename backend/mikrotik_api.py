@@ -1,15 +1,19 @@
-import routeros_api
 import os
-import subprocess
 import re
-from dotenv import load_dotenv
+import subprocess
 from datetime import datetime
+
+import routeros_api
+from dotenv import load_dotenv
 
 load_dotenv()
 
+
 class MikroTikAPI:
     def __init__(self):
-        self.original_host = os.getenv("MIKROTIK_HOST", "192.168.88.1")  # Store original (MAC or IP)
+        self.original_host = os.getenv(
+            "MIKROTIK_HOST", "192.168.88.1"
+        )  # Store original (MAC or IP)
         self.host = self.original_host
         self.username = os.getenv("MIKROTIK_USERNAME", "admin")
         self.password = os.getenv("MIKROTIK_PASSWORD", "")
@@ -27,6 +31,7 @@ class MikroTikAPI:
                 self.host = ip
                 self.cached_ip = ip
                 import time
+
                 self.last_scan_time = time.time()
             else:
                 print(f"✗ Could not resolve MAC to IP")
@@ -34,6 +39,7 @@ class MikroTikAPI:
     def refresh_config(self):
         """Reload configuration from .env and clear caches"""
         from dotenv import load_dotenv
+
         load_dotenv(override=True)  # Force reload .env
 
         # Clear connection and caches
@@ -57,23 +63,24 @@ class MikroTikAPI:
 
     def _is_mac_address(self, address):
         """Check if the address is a MAC address"""
-        mac_pattern = re.compile(r'^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$')
+        mac_pattern = re.compile(r"^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$")
         return bool(mac_pattern.match(address))
 
     def _get_local_network(self):
         """Get local network subnet"""
         try:
             import socket
+
             import netifaces
 
             # Try using netifaces (more reliable)
             try:
                 gateways = netifaces.gateways()
-                default_interface = gateways['default'][netifaces.AF_INET][1]
+                default_interface = gateways["default"][netifaces.AF_INET][1]
                 addrs = netifaces.ifaddresses(default_interface)
-                ip = addrs[netifaces.AF_INET][0]['addr']
+                ip = addrs[netifaces.AF_INET][0]["addr"]
                 # Extract subnet (e.g., 192.168.1.x from 192.168.1.100)
-                subnet = '.'.join(ip.split('.')[0:3])
+                subnet = ".".join(ip.split(".")[0:3])
                 return subnet
             except:
                 pass
@@ -83,7 +90,7 @@ class MikroTikAPI:
             s.connect(("8.8.8.8", 80))
             local_ip = s.getsockname()[0]
             s.close()
-            subnet = '.'.join(local_ip.split('.')[0:3])
+            subnet = ".".join(local_ip.split(".")[0:3])
             return subnet
         except:
             return "192.168.1"  # Default fallback
@@ -91,13 +98,15 @@ class MikroTikAPI:
     def _find_ip_from_mac(self, mac_address):
         """Find IP address from MAC address using ARP - FAST VERSION"""
         try:
-            mac_normalized = mac_address.lower().replace('-', ':')
+            mac_normalized = mac_address.lower().replace("-", ":")
 
             # STEP 1: Quick ARP cache check (instant)
-            result = subprocess.run(['arp', '-a'], capture_output=True, text=True, timeout=5)
-            for line in result.stdout.split('\n'):
+            result = subprocess.run(
+                ["arp", "-a"], capture_output=True, text=True, timeout=5
+            )
+            for line in result.stdout.split("\n"):
                 if mac_normalized in line.lower():
-                    ip_match = re.search(r'\(([0-9.]+)\)', line)
+                    ip_match = re.search(r"\(([0-9.]+)\)", line)
                     if ip_match:
                         found_ip = ip_match.group(1)
                         print(f"✓ Found in ARP cache: {found_ip}")
@@ -112,10 +121,14 @@ class MikroTikAPI:
 
             # Ping all at once using threading for speed
             import threading
+
             def quick_ping(ip):
                 try:
-                    subprocess.run(['ping', '-c', '1', '-W', '1', ip],
-                                 capture_output=True, timeout=2)
+                    subprocess.run(
+                        ["ping", "-c", "1", "-W", "1", ip],
+                        capture_output=True,
+                        timeout=2,
+                    )
                 except:
                     pass
 
@@ -130,10 +143,12 @@ class MikroTikAPI:
                 t.join(timeout=2)
 
             # Quick ARP check
-            result = subprocess.run(['arp', '-a'], capture_output=True, text=True, timeout=5)
-            for line in result.stdout.split('\n'):
+            result = subprocess.run(
+                ["arp", "-a"], capture_output=True, text=True, timeout=5
+            )
+            for line in result.stdout.split("\n"):
                 if mac_normalized in line.lower():
-                    ip_match = re.search(r'\(([0-9.]+)\)', line)
+                    ip_match = re.search(r"\(([0-9.]+)\)", line)
                     if ip_match:
                         found_ip = ip_match.group(1)
                         print(f"✓ Found after quick scan: {found_ip}")
@@ -150,6 +165,7 @@ class MikroTikAPI:
     def connect(self, retry=True):
         """Establish connection to MikroTik router"""
         import time
+
         max_retries = 3 if retry else 1
 
         for attempt in range(max_retries):
@@ -186,18 +202,21 @@ class MikroTikAPI:
                                 continue
                             return False
 
-                print(f"Connecting to MikroTik at {self.host}:{self.port} (attempt {attempt + 1}/{max_retries})...")
+                print(
+                    f"Connecting to MikroTik at {self.host}:{self.port} (attempt {attempt + 1}/{max_retries})..."
+                )
 
                 # Set socket timeout (increased for network latency)
                 import socket
-                socket.setdefaulttimeout(30)
+
+                socket.setdefaulttimeout(240)
 
                 self.connection = routeros_api.RouterOsApiPool(
                     self.host,
                     username=self.username,
                     password=self.password,
                     port=self.port,
-                    plaintext_login=True
+                    plaintext_login=True,
                 )
                 print(f"✅ Connected to MikroTik successfully")
                 return True
@@ -231,14 +250,10 @@ class MikroTikAPI:
 
                 print(f"Getting hotspot user resource...")
                 # Create hotspot user
-                user_resource = api.get_resource('/ip/hotspot/user')
+                user_resource = api.get_resource("/ip/hotspot/user")
 
                 print(f"Adding user {username} with profile {profile}...")
-                user_resource.add(
-                    name=username,
-                    password=password,
-                    profile=profile
-                )
+                user_resource.add(name=username, password=password, profile=profile)
 
                 print(f"User {username} created successfully in MikroTik")
                 return True
@@ -259,13 +274,13 @@ class MikroTikAPI:
                     raise Exception("Failed to connect to MikroTik")
 
                 api = self.connection.get_api()
-                user_resource = api.get_resource('/ip/hotspot/user')
+                user_resource = api.get_resource("/ip/hotspot/user")
 
                 # Find the user
                 users = user_resource.get(name=username)
                 if users:
-                    user_id = users[0]['id']
-                    user_resource.set(id=user_id, disabled='yes')
+                    user_id = users[0]["id"]
+                    user_resource.set(id=user_id, disabled="yes")
                     print(f"User {username} disabled successfully")
                     return True
                 else:
@@ -288,13 +303,13 @@ class MikroTikAPI:
                     raise Exception("Failed to connect to MikroTik")
 
                 api = self.connection.get_api()
-                user_resource = api.get_resource('/ip/hotspot/user')
+                user_resource = api.get_resource("/ip/hotspot/user")
 
                 # Find the user
                 users = user_resource.get(name=username)
                 if users:
-                    user_id = users[0]['id']
-                    user_resource.set(id=user_id, disabled='no')
+                    user_id = users[0]["id"]
+                    user_resource.set(id=user_id, disabled="no")
                     print(f"User {username} enabled successfully")
                     return True
                 else:
@@ -315,7 +330,7 @@ class MikroTikAPI:
                 self.connect()
 
             api = self.connection.get_api()
-            active_resource = api.get_resource('/ip/hotspot/active')
+            active_resource = api.get_resource("/ip/hotspot/active")
 
             active_users = active_resource.get()
             return active_users
@@ -331,11 +346,11 @@ class MikroTikAPI:
                 raise Exception("Failed to connect to MikroTik")
 
             api = self.connection.get_api()
-            user_resource = api.get_resource('/ip/hotspot/user')
+            user_resource = api.get_resource("/ip/hotspot/user")
 
             users = user_resource.get()
             # Return list of usernames
-            return [user.get('name') for user in users if user.get('name')]
+            return [user.get("name") for user in users if user.get("name")]
         except Exception as e:
             print(f"Failed to get all users: {e}")
             return []
@@ -353,12 +368,12 @@ class MikroTikAPI:
                     return False
 
                 api = self.connection.get_api()
-                user_resource = api.get_resource('/ip/hotspot/user')
+                user_resource = api.get_resource("/ip/hotspot/user")
 
                 # Find and delete the user
                 users = user_resource.get(name=username)
                 if users:
-                    user_id = users[0]['id']
+                    user_id = users[0]["id"]
                     user_resource.remove(id=user_id)
                     print(f"User {username} deleted successfully from MikroTik")
                     return True
@@ -366,12 +381,15 @@ class MikroTikAPI:
                     print(f"User {username} not found in MikroTik")
                     return True  # Return True if user doesn't exist (already deleted)
             except Exception as e:
-                print(f"Failed to delete user {username} (attempt {attempt + 1}/3): {e}")
+                print(
+                    f"Failed to delete user {username} (attempt {attempt + 1}/3): {e}"
+                )
                 if attempt < 2:
                     self.connection = None
                     continue
                 return False
         return False
+
 
 # Global instance
 mikrotik = MikroTikAPI()
