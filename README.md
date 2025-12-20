@@ -102,7 +102,52 @@ python main.py
 
 Backend will be available at `http://localhost:8000`
 
-### 3. Frontend Setup
+### 3. Database Migrations (Alembic)
+
+**Important:** Use Alembic for managing database schema changes. Never hardcode credentials in `alembic.ini`.
+
+```bash
+cd backend
+source venv/bin/activate  # Activate virtual environment
+
+# Install Alembic (if not already installed)
+pip install alembic
+
+# Create initial migration
+alembic revision --autogenerate -m "Initial schema"
+
+# Apply migrations to database
+alembic upgrade head
+
+# Check current migration status
+alembic current
+
+# View migration history
+alembic history
+```
+
+**Configuration Notes:**
+- Database URL is loaded from `.env` file automatically
+- Never hardcode credentials in `alembic.ini`
+- All migrations are stored in `backend/alembic/versions/`
+- The `alembic/env.py` is configured to use your database models from `database.py`
+
+**Common Alembic Commands:**
+```bash
+# Create a new migration
+alembic revision --autogenerate -m "Description of changes"
+
+# Apply all pending migrations
+alembic upgrade head
+
+# Rollback last migration
+alembic downgrade -1
+
+# Rollback to specific revision
+alembic downgrade <revision_id>
+```
+
+### 4. Frontend Setup
 
 ```bash
 cd frontend
@@ -121,14 +166,38 @@ Dashboard will be available at `http://localhost:3000`
 ### Backend (.env file)
 
 ```env
-DATABASE_URL=postgresql://admin:temp123@localhost/mikrotik_billing
+# Database Configuration (use postgresql+psycopg2:// for proper driver support)
+DATABASE_URL=postgresql+psycopg2://postgres:postgres@localhost:5432/mikrotik_billing
+
+# MikroTik Router Configuration
 MIKROTIK_HOST=192.168.88.1
 MIKROTIK_USERNAME=api_admin
 MIKROTIK_PASSWORD=your_password
 MIKROTIK_PORT=8728
+
+# API Configuration
 API_HOST=0.0.0.0
 API_PORT=8000
+
+# ZenoPay Configuration (for payment integration)
+ZENOPAY_API_KEY=your_zenopay_api_key_here
+ZENOPAY_PIN=0000
+ZENOPAY_WEBHOOK_URL=http://your-domain.com/api/payments/webhook
+
+# Payment Plan Pricing (in TZS)
+DAILY_1_DEVICE_PRICE=1000
+DAILY_2_DEVICES_PRICE=1500
+MONTHLY_1_DEVICE_PRICE=10000
+MONTHLY_2_DEVICES_PRICE=15000
+
+# WhatsApp Business API Configuration (for sending credentials)
+WHATSAPP_ACCESS_TOKEN=your_whatsapp_access_token_here
+WHATSAPP_PHONE_NUMBER_ID=your_phone_number_id_here
+WHATSAPP_BUSINESS_ID=your_business_account_id_here
+WHATSAPP_API_VERSION=v21.0
 ```
+
+**Important:** Never commit your `.env` file to version control. Keep your credentials secure.
 
 ### MikroTik Router Configuration
 
