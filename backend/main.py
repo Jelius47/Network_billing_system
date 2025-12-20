@@ -2,6 +2,7 @@ import os
 from datetime import datetime, timedelta
 from typing import List, Optional
 
+import sentry_sdk
 import uvicorn
 from apscheduler.schedulers.background import BackgroundScheduler
 from database import Log, Payment, PaymentTransaction, User, get_db, init_db
@@ -10,12 +11,14 @@ from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from mikrotik_api import mikrotik
 from payment_service import payment_service
-from whatsapp_service import whatsapp_service
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
+from whatsapp_service import whatsapp_service
 
 load_dotenv()
 API_PORT = int(os.getenv("API_PORT", 8004))
+SENTRY_DSN = os.getenv("SENTRY_DSN", "")
+
 app = FastAPI(title="MikroTik Billing System")
 
 # CORS Configuration
@@ -25,6 +28,12 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+)
+sentry_sdk.init(
+    dsn=SENTRY_DSN,
+    # Add data like request headers and IP for users,
+    # see https://docs.sentry.io/platforms/python/data-management/data-collected/ for more info
+    send_default_pii=True,
 )
 
 
@@ -169,6 +178,11 @@ async def shutdown_event():
     """Cleanup on shutdown"""
     mikrotik.disconnect()
     scheduler.shutdown()
+
+
+@app.get("/sentry-debug")
+async def trigger_error():
+    division_by_zero = 1 / 0
 
 
 @app.get("/")
@@ -476,7 +490,9 @@ async def create_payment_checkout(
                     db,
                     f"WhatsApp payment reminder failed for {request.phone}: {whatsapp_result.get('error')}",
                 )
-                print(f"WhatsApp payment reminder error: {whatsapp_result.get('error')}")
+                print(
+                    f"WhatsApp payment reminder error: {whatsapp_result.get('error')}"
+                )
 
         except Exception as e:
             log_event(db, f"WhatsApp payment reminder exception: {str(e)}")
@@ -517,7 +533,9 @@ async def payment_webhook(request: Request, db: Session = Depends(get_db)):
 
         # Find transaction in database
         transaction = (
-            db.query(PaymentTransaction).filter(PaymentTransaction.tx_ref == tx_ref).first()
+            db.query(PaymentTransaction)
+            .filter(PaymentTransaction.tx_ref == tx_ref)
+            .first()
         )
 
         if not transaction:
@@ -629,9 +647,11 @@ async def payment_webhook(request: Request, db: Session = Depends(get_db)):
 @app.get("/payments/transactions")
 async def list_payment_transactions(db: Session = Depends(get_db)):
     """List all payment transactions"""
-    transactions = db.query(PaymentTransaction).order_by(
-        PaymentTransaction.created_at.desc()
-    ).all()
+    transactions = (
+        db.query(PaymentTransaction)
+        .order_by(PaymentTransaction.created_at.desc())
+        .all()
+    )
     return transactions
 
 
