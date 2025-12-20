@@ -4,11 +4,13 @@ from typing import List, Optional
 
 import uvicorn
 from apscheduler.schedulers.background import BackgroundScheduler
-from database import Log, Payment, User, get_db, init_db
+from database import Log, Payment, PaymentTransaction, User, get_db, init_db
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from mikrotik_api import mikrotik
+from payment_service import payment_service
+from whatsapp_service import whatsapp_service
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -63,6 +65,27 @@ class PaymentResponse(BaseModel):
 
 class ExtendSubscription(BaseModel):
     days: int
+
+
+class PaymentCheckoutRequest(BaseModel):
+    phone: str  # e.g., "0781588379"
+    buyer_name: str  # Customer full name
+    plan_type: str  # 'daily_1000' or 'monthly_1000'
+    device_count: int = 1  # Number of devices (1 or 2)
+    redirect_url: Optional[str] = None
+
+
+class PaymentCheckoutResponse(BaseModel):
+    payment_link: str
+    tx_ref: str
+    amount: int
+    plan_type: str
+
+
+class WebhookPayload(BaseModel):
+    order_id: Optional[str] = None
+    payment_status: str
+    reference: Optional[str] = None
 
 
 # Utility Functions
@@ -397,6 +420,246 @@ async def sync_users(db: Session = Depends(get_db)):
         }
     except Exception as e:
         return {"success": False, "message": f"Sync failed: {str(e)}", "removed": 0}
+
+
+# ==================== PAYMENT ENDPOINTS ====================
+
+
+@app.post("/payments/create-checkout", response_model=PaymentCheckoutResponse)
+async def create_payment_checkout(
+    request: PaymentCheckoutRequest, db: Session = Depends(get_db)
+):
+    """
+    Create a ZenoPay checkout session for internet access payment
+    """
+    try:
+        # Create checkout with ZenoPay
+        checkout_data = payment_service.create_payment_checkout(
+            phone=request.phone,
+            buyer_name=request.buyer_name,
+            plan_type=request.plan_type,
+            device_count=request.device_count,
+            redirect_url=request.redirect_url,
+        )
+
+        # Save transaction to database
+        transaction = PaymentTransaction(
+            tx_ref=checkout_data["tx_ref"],
+            phone=request.phone,
+            buyer_name=request.buyer_name,
+            plan_type=request.plan_type,
+            device_count=request.device_count,
+            amount=checkout_data["amount"],
+            payment_link=checkout_data["payment_link"],
+            status="PENDING",
+        )
+        db.add(transaction)
+        db.commit()
+
+        log_event(db, f"Payment checkout created: {checkout_data['tx_ref']}")
+
+        # Send payment link via WhatsApp
+        try:
+            whatsapp_result = whatsapp_service.send_payment_reminder(
+                phone=request.phone,
+                buyer_name=request.buyer_name,
+                payment_link=checkout_data["payment_link"],
+            )
+
+            if whatsapp_result["success"]:
+                log_event(
+                    db,
+                    f"WhatsApp payment reminder sent to {request.phone} - Message ID: {whatsapp_result.get('message_id')}",
+                )
+            else:
+                log_event(
+                    db,
+                    f"WhatsApp payment reminder failed for {request.phone}: {whatsapp_result.get('error')}",
+                )
+                print(f"WhatsApp payment reminder error: {whatsapp_result.get('error')}")
+
+        except Exception as e:
+            log_event(db, f"WhatsApp payment reminder exception: {str(e)}")
+            print(f"WhatsApp payment reminder exception: {e}")
+
+        return PaymentCheckoutResponse(**checkout_data)
+
+    except Exception as e:
+        log_event(db, f"Payment checkout failed: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to create payment checkout: {str(e)}"
+        )
+
+
+@app.post("/payments/webhook")
+async def payment_webhook(request: Request, db: Session = Depends(get_db)):
+    """
+    ZenoPay webhook endpoint for payment notifications
+    """
+    try:
+        # Get raw body
+        raw_body = await request.body()
+        body_str = raw_body.decode("utf-8")
+
+        # Parse JSON
+        import json
+
+        payload = json.loads(body_str)
+
+        print(f"Received webhook: {payload}")
+
+        # Extract payment data (adjust based on ZenoPay webhook format)
+        payment_status = payload.get("payment_status", "").upper()
+        tx_ref = payload.get("reference") or payload.get("tx_ref")
+
+        if not tx_ref:
+            return {"status": "error", "message": "No transaction reference found"}
+
+        # Find transaction in database
+        transaction = (
+            db.query(PaymentTransaction).filter(PaymentTransaction.tx_ref == tx_ref).first()
+        )
+
+        if not transaction:
+            return {
+                "status": "error",
+                "message": f"Transaction not found: {tx_ref}",
+            }
+
+        # Handle payment status
+        if payment_status == "COMPLETED" and transaction.status != "COMPLETED":
+            # Create user with auto-generated credentials
+            user_data = payment_service.create_user_after_payment(
+                tx_ref=tx_ref,
+                phone=transaction.phone,
+                buyer_name=transaction.buyer_name,
+                plan_type=transaction.plan_type,
+            )
+
+            # Calculate expiry
+            expiry = calculate_expiry(transaction.plan_type)
+
+            # Create user in MikroTik
+            success = mikrotik.create_user(
+                user_data["username"], user_data["password"], transaction.plan_type
+            )
+
+            if not success:
+                log_event(db, f"Failed to create MikroTik user for payment: {tx_ref}")
+                return {
+                    "status": "error",
+                    "message": "Failed to create user in MikroTik",
+                }
+
+            # Create user in database
+            db_user = User(
+                username=user_data["username"],
+                password=user_data["password"],
+                plan_type=transaction.plan_type,
+                expiry=expiry,
+                is_active=True,
+                auto_generated=True,
+                phone=transaction.phone,
+                buyer_name=transaction.buyer_name,
+                tx_ref=tx_ref,
+                device_count=transaction.device_count,
+            )
+            db.add(db_user)
+            db.commit()
+            db.refresh(db_user)
+
+            # Update transaction status
+            transaction.status = "COMPLETED"
+            transaction.user_id = db_user.id
+            transaction.completed_at = datetime.utcnow()
+            db.commit()
+
+            log_event(
+                db,
+                f"Payment completed: {tx_ref} - User {user_data['username']} created",
+            )
+
+            # Send credentials via WhatsApp
+            try:
+                whatsapp_result = whatsapp_service.send_credentials_message(
+                    phone=transaction.phone,
+                    username=user_data["username"],
+                    password=user_data["password"],
+                    plan_type=transaction.plan_type,
+                    buyer_name=transaction.buyer_name,
+                )
+
+                if whatsapp_result["success"]:
+                    log_event(
+                        db,
+                        f"WhatsApp credentials sent to {transaction.phone} - Message ID: {whatsapp_result.get('message_id')}",
+                    )
+                else:
+                    log_event(
+                        db,
+                        f"WhatsApp send failed for {transaction.phone}: {whatsapp_result.get('error')}",
+                    )
+                    print(f"WhatsApp error: {whatsapp_result.get('error')}")
+
+            except Exception as e:
+                log_event(db, f"WhatsApp service error: {str(e)}")
+                print(f"WhatsApp exception: {e}")
+
+            return {
+                "status": "success",
+                "message": "User created successfully",
+                "username": user_data["username"],
+                "password": user_data["password"],
+            }
+
+        elif payment_status == "FAILED":
+            transaction.status = "FAILED"
+            db.commit()
+            log_event(db, f"Payment failed: {tx_ref}")
+            return {"status": "acknowledged", "message": "Payment failed"}
+
+        return {"status": "acknowledged"}
+
+    except Exception as e:
+        print(f"Webhook error: {e}")
+        log_event(db, f"Webhook error: {str(e)}")
+        return {"status": "error", "message": str(e)}
+
+
+@app.get("/payments/transactions")
+async def list_payment_transactions(db: Session = Depends(get_db)):
+    """List all payment transactions"""
+    transactions = db.query(PaymentTransaction).order_by(
+        PaymentTransaction.created_at.desc()
+    ).all()
+    return transactions
+
+
+@app.get("/payments/check/{tx_ref}")
+async def check_payment_status(tx_ref: str, db: Session = Depends(get_db)):
+    """Check payment status and return credentials if completed"""
+    transaction = (
+        db.query(PaymentTransaction).filter(PaymentTransaction.tx_ref == tx_ref).first()
+    )
+
+    if not transaction:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+
+    if transaction.status == "COMPLETED" and transaction.user_id:
+        user = db.query(User).filter(User.id == transaction.user_id).first()
+        if user:
+            return {
+                "status": "COMPLETED",
+                "username": user.username,
+                "password": user.password,
+                "plan_type": user.plan_type,
+                "expiry": user.expiry,
+            }
+
+    return {
+        "status": transaction.status,
+        "message": "Payment not yet completed",
+    }
 
 
 if __name__ == "__main__":
