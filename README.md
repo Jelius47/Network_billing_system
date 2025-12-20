@@ -14,6 +14,8 @@ A complete billing system for MikroTik RB941 routers with API integration, user 
 
 ## Architecture
 
+### System Overview
+
 ```
 ┌─────────────┐       ┌─────────────┐       ┌─────────────┐
 │   React     │◄─────►│   FastAPI   │◄─────►│  MikroTik   │
@@ -26,6 +28,38 @@ A complete billing system for MikroTik RB941 routers with API integration, user 
                       │  Database   │
                       └─────────────┘
 ```
+
+### Login Page Architecture (Hotspot Portal)
+
+**Important:** The hotspot login page (`login.html`) is served from MikroTik but communicates with the backend API via AJAX.
+
+```
+┌──────────────────┐          ┌──────────────────┐          ┌─────────────────┐
+│   MikroTik       │          │   Backend API    │          │   PostgreSQL    │
+│   Router         │          │  (FastAPI)       │          │   Database      │
+│  (Hotspot)       │          │  Your Server IP  │          │                 │
+└────────┬─────────┘          └────────┬─────────┘          └────────┬────────┘
+         │                             │                             │
+         │ 1. Serves login.html        │ 3. API Calls               │
+         │    (Static HTML)            │    (CORS enabled)          │
+         │                             │                             │
+         │    2. User Browser ────────►│ 4. Create User ───────────►│
+         │       (AJAX/Fetch)          │    Send WhatsApp           │
+         │                             │                             │
+         └────────5. Authenticate──────┘                             │
+              (MikroTik direct)                                      │
+```
+
+**How It Works:**
+1. User connects to WiFi → MikroTik serves `login.html` from hotspot
+2. User buys access → JavaScript makes API call to backend server
+3. Backend creates user + sends credentials via WhatsApp
+4. User logs in → MikroTik authenticates (no backend needed)
+
+**Configuration Required:**
+- `login.html` line 546: Set `API_BASE_URL` to your backend server IP/domain
+- Backend CORS must allow all origins (already configured)
+- MikroTik hotspot must be configured to serve the login page
 
 ## Quick Start
 
@@ -202,6 +236,36 @@ WHATSAPP_API_VERSION=v21.0
 ### MikroTik Router Configuration
 
 See `docs/MIKROTIK_SETUP.md` for detailed router configuration instructions.
+
+### Hotspot Login Page Configuration
+
+The login page (`docs/hotspot/login.html`) needs to be configured with your backend API URL:
+
+1. **Edit login.html line 546:**
+   ```javascript
+   const API_BASE_URL = 'http://YOUR_SERVER_IP:8000/api';
+   ```
+   Replace `YOUR_SERVER_IP` with your backend server's public IP or domain name.
+
+2. **Upload to MikroTik:**
+   - Access MikroTik WebFig/Winbox
+   - Go to Files → Upload `login.html`
+   - Configure Hotspot to use this custom login page
+
+3. **CORS is pre-configured:**
+   - The backend already allows cross-origin requests
+   - No additional configuration needed
+
+**Example Configuration:**
+```javascript
+// For local development/testing
+const API_BASE_URL = 'http://localhost:8000/api';
+
+// For production (replace with your actual server)
+const API_BASE_URL = 'http://YOUR_SERVER_IP:8000/api';
+// Or use a domain name:
+// const API_BASE_URL = 'https://api.yourdomain.com/api';
+```
 
 ## Project Structure
 
