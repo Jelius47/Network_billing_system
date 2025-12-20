@@ -245,15 +245,28 @@ class MikroTikAPI:
                 # Get fresh API instance
                 api = self.connection.get_api()
 
-                # Determine profile based on plan type
+                # Determine profile and uptime limit based on plan type
                 profile = plan_type  # 'daily_1000' or 'monthly_1000'
+
+                # Set uptime limit (actual usage time, not calendar time)
+                if plan_type == "daily_1000":
+                    uptime_limit = "1d"  # 24 hours of actual usage
+                elif plan_type == "monthly_1000":
+                    uptime_limit = "30d"  # 30 days of actual usage
+                else:
+                    uptime_limit = "1d"  # Default to 1 day
 
                 print(f"Getting hotspot user resource...")
                 # Create hotspot user
                 user_resource = api.get_resource("/ip/hotspot/user")
 
-                print(f"Adding user {username} with profile {profile}...")
-                user_resource.add(name=username, password=password, profile=profile)
+                print(f"Adding user {username} with profile {profile} and uptime limit {uptime_limit}...")
+                user_resource.add(
+                    name=username,
+                    password=password,
+                    profile=profile,
+                    **{"limit-uptime": uptime_limit}
+                )
 
                 print(f"User {username} created successfully in MikroTik")
                 return True
