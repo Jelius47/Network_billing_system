@@ -5,6 +5,7 @@ __pycache__/
 *.so
 .Python
 build/
+.claude/
 develop-eggs/
 dist/
 downloads/
@@ -43,10 +44,6 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 
-# React build output
-frontend/build/
-build/
-
 # IDE related
 .idea/
 .vscode/
@@ -80,20 +77,3 @@ Thumbs.db
 # Project specific
 *.db
 *.sqlite3
-
-# Backups and database dumps
-*.sql
-*.backup
-*.bak
-*.dump
-backups/
-*.gz
-
-# Docker volumes (if using local volumes)
-postgres_data/
-
-# Temporary files
-*.tmp
-tmp/
-temp/
-.cache/
