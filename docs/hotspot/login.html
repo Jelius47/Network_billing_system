@@ -14,20 +14,16 @@
                 margin: 0;
                 padding: 0;
                 box-sizing: border-box;
-                -webkit-tap-highlight-color: transparent;
             }
 
             html,
             body {
                 width: 100%;
                 height: 100%;
-                font-family:
-                    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-                    "Helvetica Neue", Arial, sans-serif;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
                 font-size: 16px;
                 background: #f8f9fa;
                 color: #1a1a1a;
-                overflow-x: hidden;
             }
 
             .container {
@@ -48,23 +44,18 @@
                 font-size: 2rem;
                 font-weight: 600;
                 color: #1a1a1a;
-                letter-spacing: -0.5px;
             }
 
             .tagline {
                 color: #6b7280;
                 font-size: 0.875rem;
                 margin-top: 8px;
-                font-weight: 400;
-                letter-spacing: 0.5px;
             }
 
             .lang-toggle {
                 position: absolute;
                 top: 20px;
                 right: 20px;
-                display: flex;
-                gap: 8px;
                 background: white;
                 padding: 4px;
                 border-radius: 6px;
@@ -80,7 +71,6 @@
                 font-size: 14px;
                 font-weight: 500;
                 color: #6b7280;
-                transition: all 0.2s;
             }
 
             .lang-btn.active {
@@ -110,7 +100,6 @@
                 text-align: center;
                 cursor: pointer;
                 border-bottom: 2px solid transparent;
-                transition: all 0.2s;
                 font-weight: 500;
                 color: #6b7280;
             }
@@ -118,10 +107,6 @@
             .tab.active {
                 color: #1a1a1a;
                 border-bottom-color: #1a1a1a;
-            }
-
-            .tab:hover {
-                color: #1a1a1a;
             }
 
             .tab-content {
@@ -134,7 +119,6 @@
 
             .input-group {
                 margin-bottom: 20px;
-                width: 100%;
             }
 
             .input-group label {
@@ -145,8 +129,7 @@
                 color: #374151;
             }
 
-            .input-group input,
-            .input-group select {
+            .input-group input {
                 width: 100%;
                 padding: 12px 14px;
                 font-size: 15px;
@@ -154,20 +137,11 @@
                 border-radius: 6px;
                 background: #fff;
                 color: #1a1a1a;
-                transition: all 0.2s ease;
-                -webkit-appearance: none;
-                appearance: none;
             }
 
-            .input-group input:focus,
-            .input-group select:focus {
+            .input-group input:focus {
                 outline: none;
                 border-color: #1a1a1a;
-                box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
-            }
-
-            .input-group input::placeholder {
-                color: #9ca3af;
             }
 
             .plan-option {
@@ -176,11 +150,6 @@
                 border-radius: 6px;
                 margin-bottom: 12px;
                 cursor: pointer;
-                transition: all 0.2s;
-            }
-
-            .plan-option:hover {
-                border-color: #d1d5db;
             }
 
             .plan-option.selected {
@@ -209,21 +178,11 @@
                 border: none;
                 border-radius: 6px;
                 cursor: pointer;
-                transition: all 0.2s ease;
                 margin-top: 8px;
             }
 
             .submit-btn:hover {
                 background: #000000;
-            }
-
-            .submit-btn:active {
-                transform: scale(0.98);
-            }
-
-            .submit-btn:disabled {
-                background: #9ca3af;
-                cursor: not-allowed;
             }
 
             .message {
@@ -246,68 +205,6 @@
                 border: 1px solid #fecaca;
             }
 
-            .success-message {
-                background: #f0fdf4;
-                color: #16a34a;
-                border: 1px solid #bbf7d0;
-            }
-
-            .credentials-box {
-                background: #f9fafb;
-                border: 1px solid #e5e7eb;
-                border-radius: 6px;
-                padding: 20px;
-                margin-bottom: 20px;
-            }
-
-            .credentials-box h3 {
-                font-size: 16px;
-                margin-bottom: 16px;
-                color: #1a1a1a;
-            }
-
-            .credential-item {
-                display: flex;
-                justify-content: space-between;
-                padding: 10px 0;
-                border-bottom: 1px solid #e5e7eb;
-            }
-
-            .credential-item:last-child {
-                border-bottom: none;
-            }
-
-            .credential-label {
-                font-weight: 500;
-                color: #6b7280;
-                font-size: 14px;
-            }
-
-            .credential-value {
-                font-weight: 600;
-                color: #1a1a1a;
-                font-size: 14px;
-            }
-
-            .spinner {
-                border: 3px solid #f3f4f6;
-                border-top: 3px solid #1a1a1a;
-                border-radius: 50%;
-                width: 40px;
-                height: 40px;
-                animation: spin 1s linear infinite;
-                margin: 20px auto;
-            }
-
-            @keyframes spin {
-                0% {
-                    transform: rotate(0deg);
-                }
-                100% {
-                    transform: rotate(360deg);
-                }
-            }
-
             .footer {
                 text-align: center;
                 margin-top: 40px;
@@ -315,386 +212,133 @@
                 font-size: 0.813rem;
             }
 
-            .footer p {
-                margin-top: 4px;
-            }
-
-            .hidden {
-                display: none;
-            }
-
             @media (max-width: 767px) {
                 .container {
                     padding: 15px;
                 }
-
-                .logo-container {
-                    margin-bottom: 24px;
-                }
-
-                .uchipani-logo {
-                    font-size: 1.75rem;
-                }
-
                 .form-container {
                     padding: 32px 24px;
                 }
-
-                input,
-                select,
-                textarea {
+                input {
                     font-size: 16px !important;
-                }
-
-                .lang-toggle {
-                    top: 10px;
-                    right: 10px;
                 }
             }
         </style>
     </head>
-
     <body>
+    $(if chap-id)
+    <form name="sendin" action="$(link-login-only)" method="post" style="display:none">
+        <input type="hidden" name="username" />
+        <input type="hidden" name="password" />
+        <input type="hidden" name="dst" value="$(link-orig)" />
+        <input type="hidden" name="popup" value="true" />
+    </form>
+
+    <script src="/md5.js"></script>
+    <script type="text/javascript">
+    <!--
+        function doLogin() {
+        document.sendin.username.value = document.login.username.value;
+        document.sendin.password.value = hexMD5('$(chap-id)' + document.login.password.value + '$(chap-challenge)');
+        document.sendin.submit();
+        return false;
+        }
+    //-->
+    </script>
+    $(endif)
+
         <!-- Language Toggle -->
         <div class="lang-toggle">
-            <button class="lang-btn active" onclick="setLanguage('sw')">
-                Swahili
-            </button>
-            <button class="lang-btn" onclick="setLanguage('en')">
-                English
-            </button>
+            <button class="lang-btn active" id="lang-sw" onclick="setLanguage('sw')">Swahili</button>
+            <button class="lang-btn" id="lang-en" onclick="setLanguage('en')">English</button>
         </div>
-
-        <!-- MikroTik Authentication Scripts -->
-        $(if chap-id)
-        <form
-            name="sendin"
-            action="$(link-login-only)"
-            method="post"
-            style="display: none"
-        >
-            <input type="hidden" name="username" />
-            <input type="hidden" name="password" />
-            <input type="hidden" name="dst" value="$(link-orig)" />
-            <input type="hidden" name="popup" value="true" />
-        </form>
-
-        <script src="/md5.js"></script>
-        <script>
-            function doLogin() {
-                document.sendin.username.value = document.login.username.value;
-                document.sendin.password.value = hexMD5(
-                    "$(chap-id)" +
-                        document.login.password.value +
-                        "$(chap-challenge)",
-                );
-                document.sendin.submit();
-                return false;
-            }
-        </script>
-        $(endif)
 
         <div class="container">
             <div class="logo-container">
                 <div class="uchipani-logo">uCHiPaNi</div>
-                <div
-                    class="tagline"
-                    data-sw="CONNECTION YA HALI YA JUU"
-                    data-en="PREMIUM CONNECTIVITY"
-                >
-                    MUUNGANISHO WA HALI YA JUU
-                </div>
+                <div class="tagline" id="tagline">MUUNGANISHO WA HALI YA JUU</div>
             </div>
 
             <div class="form-container">
-                <!-- Tab Navigation -->
+                <!-- Tabs -->
                 <div class="tabs">
-                    <div class="tab active" onclick="switchTab('login')">
-                        <span data-sw="Ingia" data-en="Login">Ingia</span>
+                    <div class="tab active" id="tab-login" onclick="switchToLogin()">
+                        <span id="tab-login-text">Ingia</span>
                     </div>
-                    <div class="tab" onclick="switchTab('buy')">
-                        <span data-sw="Nunua" data-en="Buy Access">Nunua</span>
+                    <div class="tab" id="tab-buy" onclick="switchToBuy()">
+                        <span id="tab-buy-text">Nunua</span>
                     </div>
                 </div>
 
-                <!-- Messages from MikroTik -->
+                <!-- Error Message -->
                 $(if error)
                 <div class="message error-message">$(error)</div>
                 $(endif)
 
                 <!-- Login Tab -->
-                <div id="login-tab" class="tab-content active">
-                    <div class="message info-message">
-                        <span
-                            data-sw="Ingiza neno la siri na jina la mtumiaji"
-                            data-en="Enter your credentials to connect"
-                            >Ingiza neno la siri na jina la mtumiaji</span
-                        >
+                <div id="login-content" class="tab-content active">
+                    <div class="message info-message" id="login-msg">
+                        Ingiza neno la siri na jina la mtumiaji
                     </div>
 
-                    <form
-                        name="login"
-                        action="$(link-login-only)"
-                        method="post"
-                        $(if
-                        chap-id)
-                        onSubmit="return doLogin()"
-                        $(endif)
-                    >
+                    <form name="login" action="$(link-login-only)" method="post"
+                    $(if chap-id) onSubmit="return doLogin()" $(endif)>
                         <input type="hidden" name="dst" value="$(link-orig)" />
                         <input type="hidden" name="popup" value="true" />
 
                         <div class="input-group">
-                            <input
-                                name="username"
-                                type="text"
-                                value="$(username)"
-                                data-placeholder-sw="Jina la mtumiaji"
-                                data-placeholder-en="Username"
-                                placeholder="Jina la mtumiaji"
-                                autocomplete="username"
-                                autocapitalize="none"
-                            />
+                            <input name="username" type="text" value="$(username)" id="username-field" placeholder="Jina la mtumiaji" autocomplete="username" />
                         </div>
 
                         <div class="input-group">
-                            <input
-                                name="password"
-                                type="password"
-                                data-placeholder-sw="Neno la siri"
-                                data-placeholder-en="Password"
-                                placeholder="Neno la siri"
-                                autocomplete="current-password"
-                            />
+                            <input name="password" type="password" id="password-field" placeholder="Neno la siri" autocomplete="current-password" />
                         </div>
 
-                        <button type="submit" class="submit-btn">
-                            <span data-sw="Ingia" data-en="Sign In">Ingia</span>
-                        </button>
+                        <input type="submit" value="Ingia" id="login-btn" class="submit-btn" />
                     </form>
                 </div>
 
-                <!-- Buy Access Tab -->
-                <div id="buy-tab" class="tab-content">
-                    <div id="payment-form">
-                        <div class="message info-message">
-                            <span
-                                data-sw="Nunua huduma ya mtandao na upate hati za kuingia mara moja"
-                                data-en="Purchase internet access and get instant credentials"
-                                >Nunua huduma ya mtandao na upate hati za
-                                kuingia mara moja</span
-                            >
-                        </div>
-
-                        <div class="input-group">
-                            <label data-sw="Jina Kamili" data-en="Full Name"
-                                >Jina Kamili</label
-                            >
-                            <input
-                                id="buyer-name"
-                                type="text"
-                                data-placeholder-sw="John Doe"
-                                data-placeholder-en="John Doe"
-                                placeholder="John Doe"
-                                required
-                            />
-                        </div>
-
-                        <div class="input-group">
-                            <label
-                                data-sw="Namba ya Simu"
-                                data-en="Phone Number"
-                                >Namba ya Simu</label
-                            >
-                            <input
-                                id="phone"
-                                type="tel"
-                                placeholder="0781588379"
-                                required
-                            />
-                        </div>
-
-                        <div class="input-group">
-                            <label
-                                data-sw="Idadi ya Vifaa"
-                                data-en="Number of Devices"
-                                >Idadi ya Vifaa</label
-                            >
-                            <div
-                                id="device-1"
-                                class="plan-option selected"
-                                onclick="selectDeviceCount(1)"
-                            >
-                                <div
-                                    class="plan-title"
-                                    data-sw="Kifaa 1"
-                                    data-en="1 Device"
-                                >
-                                    Kifaa 1
-                                </div>
-                                <div
-                                    class="plan-price"
-                                    data-sw="Kifaa kimoja"
-                                    data-en="Single device"
-                                >
-                                    Kifaa kimoja
-                                </div>
-                            </div>
-                            <div
-                                id="device-2"
-                                class="plan-option"
-                                onclick="selectDeviceCount(2)"
-                            >
-                                <div
-                                    class="plan-title"
-                                    data-sw="Vifaa 2"
-                                    data-en="2 Devices"
-                                >
-                                    Vifaa 2
-                                </div>
-                                <div
-                                    class="plan-price"
-                                    data-sw="Vifaa viwili"
-                                    data-en="Two devices"
-                                >
-                                    Vifaa viwili
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="input-group">
-                            <label data-sw="Chagua Mpango" data-en="Select Plan"
-                                >Chagua Mpango</label
-                            >
-                            <div
-                                id="plan-daily"
-                                class="plan-option selected"
-                                onclick="selectPlan('daily_1000')"
-                            >
-                                <div
-                                    class="plan-title"
-                                    data-sw="Mpango wa Siku"
-                                    data-en="Daily Plan"
-                                >
-                                    Mpango wa Siku
-                                </div>
-                                <div class="plan-price" id="daily-price">
-                                    <span
-                                        data-sw="TSh 1,000 - Masaa 24 ya matumizi"
-                                        data-en="1,000 TZS - 24 hours of usage"
-                                        >TSh 1,000 - Masaa 24 ya matumizi</span
-                                    >
-                                </div>
-                            </div>
-                            <div
-                                id="plan-monthly"
-                                class="plan-option"
-                                onclick="selectPlan('monthly_1000')"
-                            >
-                                <div
-                                    class="plan-title"
-                                    data-sw="Mpango wa Mwezi"
-                                    data-en="Monthly Plan"
-                                >
-                                    Mpango wa Mwezi
-                                </div>
-                                <div class="plan-price" id="monthly-price">
-                                    <span
-                                        data-sw="TSh 10,000 - Siku 30 za matumizi"
-                                        data-en="10,000 TZS - 30 days of usage"
-                                        >TSh 10,000 - Siku 30 za matumizi</span
-                                    >
-                                </div>
-                            </div>
-                        </div>
-
-                        <button
-                            onclick="createPayment()"
-                            class="submit-btn"
-                            id="pay-btn"
-                        >
-                            <span
-                                data-sw="Endelea Kulipa"
-                                data-en="Proceed to Payment"
-                                >Endelea Kulipa</span
-                            >
-                        </button>
+                <!-- Buy Tab -->
+                <div id="buy-content" class="tab-content">
+                    <div class="message info-message" id="buy-msg">
+                        Nunua huduma ya mtandao na upate hati za kuingia mara moja
                     </div>
 
-                    <!-- Payment Processing -->
-                    <div id="payment-processing" class="hidden">
-                        <div class="message info-message">
-                            <span
-                                data-sw="Inachakata malipo yako..."
-                                data-en="Processing your payment..."
-                                >Inachakata malipo yako...</span
-                            >
-                        </div>
-                        <div class="spinner"></div>
+                    <div class="input-group">
+                        <label id="name-label">Jina Kamili</label>
+                        <input id="buyer-name" type="text" placeholder="John Doe" />
                     </div>
 
-                    <!-- Credentials Display -->
-                    <div id="credentials-display" class="hidden">
-                        <div class="message success-message">
-                            <span
-                                data-sw="Malipo yamefanikiwa! Hizi ndizo hati zako:"
-                                data-en="Payment Successful! Here are your credentials:"
-                                >Malipo yamefanikiwa! Hizi ndizo hati
-                                zako:</span
-                            >
-                        </div>
-
-                        <div class="credentials-box">
-                            <h3
-                                data-sw="Huduma Yako ya Mtandao"
-                                data-en="Your Internet Access"
-                            >
-                                Huduma Yako ya Mtandao
-                            </h3>
-                            <div class="credential-item">
-                                <span
-                                    class="credential-label"
-                                    data-sw="Jina la Mtumiaji"
-                                    data-en="Username"
-                                    >Jina la Mtumiaji</span
-                                >
-                                <span
-                                    class="credential-value"
-                                    id="cred-username"
-                                ></span>
-                            </div>
-                            <div class="credential-item">
-                                <span
-                                    class="credential-label"
-                                    data-sw="Neno la Siri"
-                                    data-en="Password"
-                                    >Neno la Siri</span
-                                >
-                                <span
-                                    class="credential-value"
-                                    id="cred-password"
-                                ></span>
-                            </div>
-                            <div class="credential-item">
-                                <span
-                                    class="credential-label"
-                                    data-sw="Mpango"
-                                    data-en="Plan"
-                                    >Mpango</span
-                                >
-                                <span
-                                    class="credential-value"
-                                    id="cred-plan"
-                                ></span>
-                            </div>
-                        </div>
-
-                        <button onclick="switchTab('login')" class="submit-btn">
-                            <span data-sw="Nenda Kuingia" data-en="Go to Login"
-                                >Nenda Kuingia</span
-                            >
-                        </button>
+                    <div class="input-group">
+                        <label id="phone-label">Namba ya Simu</label>
+                        <input id="phone" type="tel" placeholder="0781588379" />
                     </div>
+
+                    <div class="input-group">
+                        <label id="device-label">Idadi ya Vifaa</label>
+                        <div id="device-1" class="plan-option selected" onclick="selectDevice(1)">
+                            <div class="plan-title" id="device1-title">Kifaa 1</div>
+                            <div class="plan-price" id="device1-desc">Kifaa kimoja</div>
+                        </div>
+                        <div id="device-2" class="plan-option" onclick="selectDevice(2)">
+                            <div class="plan-title" id="device2-title">Vifaa 2</div>
+                            <div class="plan-price" id="device2-desc">Vifaa viwili</div>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label id="plan-label">Chagua Mpango</label>
+                        <div id="plan-daily" class="plan-option selected" onclick="selectPlan('daily')">
+                            <div class="plan-title" id="daily-title">Mpango wa Siku</div>
+                            <div class="plan-price" id="daily-price">TSh 1,000 - Masaa 24 ya matumizi</div>
+                        </div>
+                        <div id="plan-monthly" class="plan-option" onclick="selectPlan('monthly')">
+                            <div class="plan-title" id="monthly-title">Mpango wa Mwezi</div>
+                            <div class="plan-price" id="monthly-price">TSh 10,000 - Siku 30 za matumizi</div>
+                        </div>
+                    </div>
+
+                    <input type="button" value="Endelea Kulipa" id="pay-btn" class="submit-btn" onclick="processPayment()" />
                 </div>
             </div>
 
@@ -703,266 +347,146 @@
             </div>
         </div>
 
-        <script>
-            // CONFIGURATION: Set your backend API URL here
-            // Example: 'http://your-server-ip:8000/api' or 'https://api.yourdomain.com/api'
-            const API_BASE_URL = "http://164.90.233.185:8000/api";
-            let selectedPlan = "daily_1000";
-            let selectedDeviceCount = 1;
-            let currentLang = "sw";
+        <script type="text/javascript">
+        <!--
+        var selectedPlan = "daily_1000";
+        var selectedDeviceCount = 1;
+        var currentLang = "sw";
 
-            // Pricing structure
-            const pricing = {
-                daily_1000: { 1: 1000, 2: 1500 },
-                monthly_1000: { 1: 10000, 2: 15000 },
-            };
+        var pricing = {
+            daily_1000: { 1: 1000, 2: 1500 },
+            monthly_1000: { 1: 10000, 2: 15000 }
+        };
 
-            // Language Support
-            function setLanguage(lang) {
-                currentLang = lang;
-                document.querySelectorAll(".lang-btn").forEach((btn) => {
-                    btn.classList.remove("active");
-                });
+        var translations = {
+            sw: {
+                tagline: "MUUNGANISHO WA HALI YA JUU",
+                tabLogin: "Ingia",
+                tabBuy: "Nunua",
+                loginMsg: "Ingiza neno la siri na jina la mtumiaji",
+                usernamePlaceholder: "Jina la mtumiaji",
+                passwordPlaceholder: "Neno la siri",
+                loginBtn: "Ingia",
+                buyMsg: "Nunua huduma ya mtandao na upate hati za kuingia mara moja",
+                nameLabel: "Jina Kamili",
+                phoneLabel: "Namba ya Simu",
+                deviceLabel: "Idadi ya Vifaa",
+                device1Title: "Kifaa 1",
+                device1Desc: "Kifaa kimoja",
+                device2Title: "Vifaa 2",
+                device2Desc: "Vifaa viwili",
+                planLabel: "Chagua Mpango",
+                dailyTitle: "Mpango wa Siku",
+                monthlyTitle: "Mpango wa Mwezi",
+                payBtn: "Endelea Kulipa"
+            },
+            en: {
+                tagline: "PREMIUM CONNECTIVITY",
+                tabLogin: "Login",
+                tabBuy: "Buy Access",
+                loginMsg: "Enter your credentials to connect",
+                usernamePlaceholder: "Username",
+                passwordPlaceholder: "Password",
+                loginBtn: "Sign In",
+                buyMsg: "Purchase internet access and get instant credentials",
+                nameLabel: "Full Name",
+                phoneLabel: "Phone Number",
+                deviceLabel: "Number of Devices",
+                device1Title: "1 Device",
+                device1Desc: "Single device",
+                device2Title: "2 Devices",
+                device2Desc: "Two devices",
+                planLabel: "Select Plan",
+                dailyTitle: "Daily Plan",
+                monthlyTitle: "Monthly Plan",
+                payBtn: "Proceed to Payment"
+            }
+        };
 
-                // Find and activate the clicked button
-                document.querySelectorAll(".lang-btn").forEach((btn) => {
-                    if ((lang === "sw" && btn.textContent.trim() === "Swahili") ||
-                        (lang === "en" && btn.textContent.trim() === "English")) {
-                        btn.classList.add("active");
-                    }
-                });
+        function updatePricing() {
+            var dailyPrice = pricing.daily_1000[selectedDeviceCount];
+            var monthlyPrice = pricing.monthly_1000[selectedDeviceCount];
 
-                // Update all translatable elements
-                document.querySelectorAll("[data-sw]").forEach((el) => {
-                    if (el.hasAttribute("data-placeholder-" + lang)) {
-                        el.placeholder = el.getAttribute(
-                            "data-placeholder-" + lang,
-                        );
-                    } else {
-                        el.textContent = el.getAttribute("data-" + lang);
-                    }
-                });
+            if (currentLang === "sw") {
+                document.getElementById("daily-price").innerHTML = "TSh " + dailyPrice.toLocaleString() + " - Masaa 24 ya matumizi";
+                document.getElementById("monthly-price").innerHTML = "TSh " + monthlyPrice.toLocaleString() + " - Siku 30 za matumizi";
+            } else {
+                document.getElementById("daily-price").innerHTML = dailyPrice.toLocaleString() + " TZS - 24 hours of usage";
+                document.getElementById("monthly-price").innerHTML = monthlyPrice.toLocaleString() + " TZS - 30 days of usage";
+            }
+        }
 
-                // Update pricing display
-                updatePricing();
+        function setLanguage(lang) {
+            currentLang = lang;
+            var t = translations[lang];
+
+            document.getElementById("lang-sw").className = lang === "sw" ? "lang-btn active" : "lang-btn";
+            document.getElementById("lang-en").className = lang === "en" ? "lang-btn active" : "lang-btn";
+
+            document.getElementById("tagline").innerHTML = t.tagline;
+            document.getElementById("tab-login-text").innerHTML = t.tabLogin;
+            document.getElementById("tab-buy-text").innerHTML = t.tabBuy;
+            document.getElementById("login-msg").innerHTML = t.loginMsg;
+            document.getElementById("username-field").placeholder = t.usernamePlaceholder;
+            document.getElementById("password-field").placeholder = t.passwordPlaceholder;
+            document.getElementById("login-btn").value = t.loginBtn;
+            document.getElementById("buy-msg").innerHTML = t.buyMsg;
+            document.getElementById("name-label").innerHTML = t.nameLabel;
+            document.getElementById("phone-label").innerHTML = t.phoneLabel;
+            document.getElementById("device-label").innerHTML = t.deviceLabel;
+            document.getElementById("device1-title").innerHTML = t.device1Title;
+            document.getElementById("device1-desc").innerHTML = t.device1Desc;
+            document.getElementById("device2-title").innerHTML = t.device2Title;
+            document.getElementById("device2-desc").innerHTML = t.device2Desc;
+            document.getElementById("plan-label").innerHTML = t.planLabel;
+            document.getElementById("daily-title").innerHTML = t.dailyTitle;
+            document.getElementById("monthly-title").innerHTML = t.monthlyTitle;
+            document.getElementById("pay-btn").value = t.payBtn;
+
+            updatePricing();
+        }
+
+        function switchToLogin() {
+            document.getElementById("tab-login").className = "tab active";
+            document.getElementById("tab-buy").className = "tab";
+            document.getElementById("login-content").className = "tab-content active";
+            document.getElementById("buy-content").className = "tab-content";
+        }
+
+        function switchToBuy() {
+            document.getElementById("tab-buy").className = "tab active";
+            document.getElementById("tab-login").className = "tab";
+            document.getElementById("buy-content").className = "tab-content active";
+            document.getElementById("login-content").className = "tab-content";
+        }
+
+        function selectDevice(count) {
+            selectedDeviceCount = count;
+            document.getElementById("device-1").className = count === 1 ? "plan-option selected" : "plan-option";
+            document.getElementById("device-2").className = count === 2 ? "plan-option selected" : "plan-option";
+            updatePricing();
+        }
+
+        function selectPlan(plan) {
+            selectedPlan = plan === "daily" ? "daily_1000" : "monthly_1000";
+            document.getElementById("plan-daily").className = plan === "daily" ? "plan-option selected" : "plan-option";
+            document.getElementById("plan-monthly").className = plan === "monthly" ? "plan-option selected" : "plan-option";
+        }
+
+        function processPayment() {
+            var name = document.getElementById("buyer-name").value;
+            var phone = document.getElementById("phone").value;
+
+            if (!name || !phone) {
+                alert(currentLang === "sw" ? "Tafadhali jaza sehemu zote" : "Please fill in all fields");
+                return;
             }
 
-            // Tab Switching
-            function switchTab(tabName) {
-                // Remove active class from all tabs
-                document.querySelectorAll(".tab").forEach((tab) => {
-                    tab.classList.remove("active");
-                });
+            alert(currentLang === "sw" ? "Malipo hayajawezeshwa bado" : "Payment not yet enabled");
+        }
 
-                // Add active class to the clicked tab by finding it through its content
-                document.querySelectorAll(".tab").forEach((tab) => {
-                    const tabText = tab.querySelector("span");
-                    if (tabText) {
-                        const text = tabText.textContent.trim().toLowerCase();
-                        if ((tabName === "login" && (text === "ingia" || text === "login")) ||
-                            (tabName === "buy" && (text === "nunua" || text === "buy access"))) {
-                            tab.classList.add("active");
-                        }
-                    }
-                });
-
-                // Switch tab content
-                document.querySelectorAll(".tab-content").forEach((content) => {
-                    content.classList.remove("active");
-                });
-                document
-                    .getElementById(tabName + "-tab")
-                    .classList.add("active");
-
-                setTimeout(() => {
-                    const activeTab = document.querySelector(
-                        ".tab-content.active",
-                    );
-                    const firstInput = activeTab.querySelector(
-                        'input[type="text"], input[type="tel"]',
-                    );
-                    if (firstInput) firstInput.focus();
-                }, 100);
-            }
-
-            // Device Count Selection
-            function selectDeviceCount(count) {
-                selectedDeviceCount = count;
-                document
-                    .getElementById("device-1")
-                    .classList.remove("selected");
-                document
-                    .getElementById("device-2")
-                    .classList.remove("selected");
-                document
-                    .getElementById("device-" + count)
-                    .classList.add("selected");
-                updatePricing();
-            }
-
-            // Update Pricing Display
-            function updatePricing() {
-                const dailyPrice = pricing.daily_1000[selectedDeviceCount];
-                const monthlyPrice = pricing.monthly_1000[selectedDeviceCount];
-
-                const dailyPriceEl =
-                    document.querySelector("#daily-price span");
-                const monthlyPriceEl = document.querySelector(
-                    "#monthly-price span",
-                );
-
-                if (currentLang === "sw") {
-                    dailyPriceEl.textContent = `TSh ${dailyPrice.toLocaleString()} - Masaa 24 ya matumizi`;
-                    monthlyPriceEl.textContent = `TSh ${monthlyPrice.toLocaleString()} - Siku 30 za matumizi`;
-                } else {
-                    dailyPriceEl.textContent = `${dailyPrice.toLocaleString()} TZS - 24 hours of usage`;
-                    monthlyPriceEl.textContent = `${monthlyPrice.toLocaleString()} TZS - 30 days of usage`;
-                }
-            }
-
-            // Plan Selection
-            function selectPlan(plan) {
-                selectedPlan = plan;
-                document
-                    .getElementById("plan-daily")
-                    .classList.remove("selected");
-                document
-                    .getElementById("plan-monthly")
-                    .classList.remove("selected");
-                document
-                    .getElementById(
-                        plan === "daily_1000" ? "plan-daily" : "plan-monthly",
-                    )
-                    .classList.add("selected");
-            }
-
-            // Create Payment
-            async function createPayment() {
-                const buyerName = document.getElementById("buyer-name").value;
-                const phone = document.getElementById("phone").value;
-
-                if (!buyerName || !phone) {
-                    alert(
-                        currentLang === "sw"
-                            ? "Tafadhali jaza sehemu zote"
-                            : "Please fill in all fields",
-                    );
-                    return;
-                }
-
-                if (!/^0\d{9}$/.test(phone)) {
-                    alert(
-                        currentLang === "sw"
-                            ? "Tafadhali ingiza namba sahihi ya simu (mfano: 0781588379)"
-                            : "Please enter a valid phone number (e.g., 0781588379)",
-                    );
-                    return;
-                }
-
-                document.getElementById("payment-form").classList.add("hidden");
-                document
-                    .getElementById("payment-processing")
-                    .classList.remove("hidden");
-
-                try {
-                    const response = await fetch(
-                        `${API_BASE_URL}/payments/create-checkout`,
-                        {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({
-                                phone: phone,
-                                buyer_name: buyerName,
-                                plan_type: selectedPlan,
-                                device_count: selectedDeviceCount,
-                                redirect_url: window.location.href,
-                            }),
-                        },
-                    );
-
-                    const data = await response.json();
-
-                    if (response.ok) {
-                        window.location.href = data.payment_link;
-                    } else {
-                        throw new Error(
-                            data.detail || "Failed to create payment",
-                        );
-                    }
-                } catch (error) {
-                    alert(
-                        (currentLang === "sw" ? "Hitilafu: " : "Error: ") +
-                            error.message,
-                    );
-                    document
-                        .getElementById("payment-form")
-                        .classList.remove("hidden");
-                    document
-                        .getElementById("payment-processing")
-                        .classList.add("hidden");
-                }
-            }
-
-            // Check Payment Status
-            async function checkPaymentStatus(txRef) {
-                try {
-                    const response = await fetch(
-                        `${API_BASE_URL}/payments/check/${txRef}`,
-                    );
-                    const data = await response.json();
-
-                    if (data.status === "COMPLETED") {
-                        document.getElementById("cred-username").textContent =
-                            data.username;
-                        document.getElementById("cred-password").textContent =
-                            data.password;
-                        document.getElementById("cred-plan").textContent =
-                            data.plan_type === "daily_1000"
-                                ? currentLang === "sw"
-                                    ? "Siku (24h)"
-                                    : "Daily (24h)"
-                                : currentLang === "sw"
-                                  ? "Mwezi (30s)"
-                                  : "Monthly (30d)";
-
-                        document
-                            .getElementById("payment-processing")
-                            .classList.add("hidden");
-                        document
-                            .getElementById("credentials-display")
-                            .classList.remove("hidden");
-                    } else {
-                        setTimeout(() => checkPaymentStatus(txRef), 3000);
-                    }
-                } catch (error) {
-                    console.error("Error checking payment:", error);
-                    setTimeout(() => checkPaymentStatus(txRef), 3000);
-                }
-            }
-
-            // Initialize
-            document.addEventListener("DOMContentLoaded", function () {
-                const urlParams = new URLSearchParams(window.location.search);
-                const txRef = urlParams.get("tx_ref");
-
-                if (txRef) {
-                    switchTab("buy");
-                    document
-                        .getElementById("payment-form")
-                        .classList.add("hidden");
-                    document
-                        .getElementById("payment-processing")
-                        .classList.remove("hidden");
-                    checkPaymentStatus(txRef);
-                } else {
-                    const usernameField = document.querySelector(
-                        'input[name="username"]',
-                    );
-                    if (usernameField && !usernameField.value) {
-                        setTimeout(() => usernameField.focus(), 100);
-                    }
-                }
-            });
+        document.login.username.focus();
+        //-->
         </script>
     </body>
 </html>

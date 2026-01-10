@@ -237,6 +237,106 @@ WHATSAPP_API_VERSION=v21.0
 
 See `docs/MIKROTIK_SETUP.md` for detailed router configuration instructions.
 
+### MikroTik Backup & Restore
+
+**IMPORTANT:** Always backup your working MikroTik configuration to avoid losing settings!
+
+#### Creating Backups
+
+Run these commands on your MikroTik router:
+
+```bash
+# Create binary backup (includes passwords)
+/system backup save name=hotspot-working-config
+
+# Create export script (human-readable)
+/export file=hotspot-working-export
+
+# Verify backups were created
+/file print
+```
+
+You should see two files:
+- `hotspot-working-config.backup` - Complete system backup
+- `hotspot-working-export.rsc` - Text-based configuration script
+
+#### Downloading Backups
+
+**Method 1: Via WinBox**
+1. Open WinBox → Connect to router
+2. Click **Files** in the left menu
+3. Find `hotspot-working-config.backup` and `hotspot-working-export.rsc`
+4. **Drag and drop** files to your computer
+
+**Method 2: Via WebFig**
+1. Go to `http://192.168.88.1/webfig`
+2. Click **Files**
+3. Download both backup files
+
+**Method 3: Via SCP (if SSH enabled)**
+```bash
+scp admin@192.168.88.1:hotspot-working-config.backup ~/Desktop/
+scp admin@192.168.88.1:hotspot-working-export.rsc ~/Desktop/
+```
+
+#### Restoring from Backup
+
+**CRITICAL:** Keep these files safe! Store them in:
+- Your computer's backup folder
+- Cloud storage (Google Drive, Dropbox, etc.)
+- USB drive
+
+**To restore your configuration:**
+
+1. **Upload backup file to MikroTik:**
+   - Via WinBox: Files → Drag `.backup` file into MikroTik
+   - Via WebFig: Files → Upload → Select `.backup` file
+
+2. **Restore the backup:**
+   ```bash
+   /system backup load name=hotspot-working-config
+   ```
+
+3. **Router will reboot automatically**
+
+**Alternative: Restore from Export Script:**
+```bash
+/import file=hotspot-working-export.rsc
+```
+
+#### What's Included in Backup
+
+Your backup includes:
+✅ All firewall rules (NAT, filter)
+✅ Hotspot configuration
+✅ IP addresses and pools
+✅ Walled garden settings (Mac/Apple captive portal fix)
+✅ User profiles and bandwidth limits
+✅ Bridge and interface configuration
+✅ All custom settings
+
+#### Backup Best Practices
+
+1. **Create backups after major changes:**
+   - After initial hotspot setup
+   - After firewall rule modifications
+   - Before firmware updates
+   - Monthly routine backups
+
+2. **Name backups descriptively:**
+   ```bash
+   /system backup save name=hotspot-2026-01-10-working
+   /export file=hotspot-2026-01-10-export
+   ```
+
+3. **Test your backups:**
+   - Keep multiple versions
+   - Test restore on a separate device if possible
+
+4. **Document your changes:**
+   - Keep notes of what you changed
+   - Store notes with backup files
+
 ### Hotspot Login Page Configuration
 
 The login page (`docs/hotspot/login.html`) needs to be configured with your backend API URL:
