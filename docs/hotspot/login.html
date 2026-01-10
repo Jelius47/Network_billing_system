@@ -723,7 +723,14 @@
                 document.querySelectorAll(".lang-btn").forEach((btn) => {
                     btn.classList.remove("active");
                 });
-                event.target.classList.add("active");
+
+                // Find and activate the clicked button
+                document.querySelectorAll(".lang-btn").forEach((btn) => {
+                    if ((lang === "sw" && btn.textContent.trim() === "Swahili") ||
+                        (lang === "en" && btn.textContent.trim() === "English")) {
+                        btn.classList.add("active");
+                    }
+                });
 
                 // Update all translatable elements
                 document.querySelectorAll("[data-sw]").forEach((el) => {
@@ -742,11 +749,24 @@
 
             // Tab Switching
             function switchTab(tabName) {
+                // Remove active class from all tabs
                 document.querySelectorAll(".tab").forEach((tab) => {
                     tab.classList.remove("active");
                 });
-                event.target.closest(".tab").classList.add("active");
 
+                // Add active class to the clicked tab by finding it through its content
+                document.querySelectorAll(".tab").forEach((tab) => {
+                    const tabText = tab.querySelector("span");
+                    if (tabText) {
+                        const text = tabText.textContent.trim().toLowerCase();
+                        if ((tabName === "login" && (text === "ingia" || text === "login")) ||
+                            (tabName === "buy" && (text === "nunua" || text === "buy access"))) {
+                            tab.classList.add("active");
+                        }
+                    }
+                });
+
+                // Switch tab content
                 document.querySelectorAll(".tab-content").forEach((content) => {
                     content.classList.remove("active");
                 });
